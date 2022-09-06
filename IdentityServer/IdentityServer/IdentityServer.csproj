@@ -6,7 +6,7 @@
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <LangVersion>8</LangVersion>
     <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
-    <CodeAnalysisRuleSet>../../settings.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRuleSet>..\..\settings.ruleset</CodeAnalysisRuleSet>
     <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
     <WarningsAsErrors></WarningsAsErrors>
     <WarningsNotAsErrors></WarningsNotAsErrors>
