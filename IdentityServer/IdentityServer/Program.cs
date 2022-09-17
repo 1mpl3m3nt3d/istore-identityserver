@@ -34,67 +34,85 @@ namespace IdentityServer
                 .WriteTo.Console(outputTemplate: "[{Timestamp:HH:mm:ss} {Level}] {SourceContext}{NewLine}{Message:lj}{NewLine}{Exception}{NewLine}", theme: AnsiConsoleTheme.Code)
                 .CreateLogger();
 
+            Log.Information("Starting host...");
+
+            var builder = CreateHostBuilder(args);
+
             try
             {
-                Log.Information("Starting host...");
-
-                var builder = CreateHostBuilder(args);
-
-                if (Environment.GetEnvironmentVariable("HEROKU_NGINX") == "true")
+                if (Environment.GetEnvironmentVariable("Nginx__UseNginx") == "true")
                 {
                     try
                     {
-                        var initFile = Environment.GetEnvironmentVariable("InitializedFile") ?? "/tmp/app-initialized";
-
-                        if (!File.Exists(initFile))
+                        if (Environment.GetEnvironmentVariable("Nginx__UseInitFile") == "true")
                         {
-                            File.Create(initFile).Close();
-                        }
+                            var initFile = Environment.GetEnvironmentVariable("Nginx__InitFilePath") ?? "/tmp/app-initialized";
 
-                        File.SetLastWriteTimeUtc(initFile, DateTime.UtcNow);
+                            if (!File.Exists(initFile))
+                            {
+                                File.Create(initFile).Close();
+                            }
+
+                            File.SetLastWriteTimeUtc(initFile, DateTime.UtcNow);
+                        }
                     }
                     catch (Exception ex)
                     {
-                        Log.Warning($"Environment variable <HEROKU_NGINX> is set to <TRUE>, but there was an exception:\n{ex.Message}");
+                        Log.Warning($"Environment variable <Nginx__UseNginx> is set to 'true', but there was an exception while configuring Initialize File:\n{ex.Message}");
                     }
 
                     try
                     {
-                        var socket = Environment.GetEnvironmentVariable("LinuxSocket") ?? "/tmp/nginx.socket";
+                        if (Environment.GetEnvironmentVariable("Nginx__UseUnixSocket") == "true")
+                        {
+                            var unixSocket = Environment.GetEnvironmentVariable("Nginx__UnixSocketPath") ?? "/tmp/nginx.socket";
 
-                        builder.ConfigureWebHostDefaults(webBuilder => webBuilder.ConfigureKestrel(kestrel => kestrel.ListenUnixSocket(socket)));
+                            builder.ConfigureWebHostDefaults(webBuilder => webBuilder.ConfigureKestrel(kestrel => kestrel.ListenUnixSocket(unixSocket)));
+                        }
+                        else
+                        {
+                            var portParsed = int.TryParse(Environment.GetEnvironmentVariable("PORT"), out var port);
 
-                        builder.Build().Run();
+                            if (portParsed)
+                            {
+                                builder.ConfigureWebHostDefaults(webBuilder => webBuilder.ConfigureKestrel(kestrel => kestrel.ListenAnyIP(port)));
+                            }
+                        }
                     }
                     catch (Exception ex)
                     {
-                        Log.Warning($"Environment variable <HEROKU_NGINX> is set to <TRUE>, but there was an exception while configuring Kestrel for Listening Unix Socket:\n{ex.Message}");
+                        Log.Warning($"Environment variable <Nginx__UseNginx> is set to 'true', but there was an exception while configuring Kestrel:\n{ex.Message}");
                     }
                 }
                 else
                 {
-                    if (Environment.GetEnvironmentVariable("PORT") != null)
-                    {
-                        try
-                        {
-                            var parsed = int.TryParse(Environment.GetEnvironmentVariable("PORT"), out var port);
+                    var portEnv = Environment.GetEnvironmentVariable("PORT");
 
-                            if (parsed)
+                    try
+                    {
+                        if (Environment.GetEnvironmentVariable("PORT") != null)
+                        {
+                            var portParsed = int.TryParse(portEnv, out var port);
+
+                            if (portParsed)
                             {
                                 builder.ConfigureWebHostDefaults(webBuilder => webBuilder.ConfigureKestrel(kestrel => kestrel.ListenAnyIP(port)));
-
-                                builder.Build().Run();
                             }
                         }
-                        catch (Exception ex)
-                        {
-                            Log.Warning($"Environment variable <PORT> is set, but there was an exception while configuring Kestrel for Listening Port:\n{ex.Message}");
-                        }
                     }
-                    else
+                    catch (Exception ex)
                     {
-                        CreateHostBuilder(args).Build().Run();
+                        Log.Warning($"Environment variable <PORT> is set to '{portEnv}', but there was an exception while configuring Kestrel:\n{ex.Message}");
                     }
+                }
+
+                try
+                {
+                    builder.Build().Run();
+                }
+                catch (Exception ex)
+                {
+                    Log.Warning($"There was an exception while running an app:\n{ex.Message}");
                 }
 
                 return 0;

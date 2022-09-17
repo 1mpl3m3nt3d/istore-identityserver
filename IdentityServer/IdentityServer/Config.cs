@@ -44,9 +44,17 @@ namespace IdentityServer
                         $"{configuration["SpaUrl"]}/silentrenew",
                         $"{configuration["SpaUrl"]}/signout-oidc",
                         $"{configuration["SpaUrl"]}/logout/callback",
+                        $"{configuration["GlobalUrl"]}/signin-oidc",
+                        $"{configuration["GlobalUrl"]}/silentrenew",
+                        $"{configuration["GlobalUrl"]}/signout-oidc",
+                        $"{configuration["GlobalUrl"]}/logout/callback",
                     },
 
-                    PostLogoutRedirectUris = { $"{configuration["SpaUrl"]}/logout/callback" },
+                    PostLogoutRedirectUris =
+                    {
+                        $"{configuration["SpaUrl"]}/logout/callback",
+                        $"{configuration["GlobalUrl"]}/logout/callback"
+                    },
 
                     AllowedCorsOrigins = { configuration["SpaUrl"], configuration["BasketApi"], configuration["CatalogApi"], configuration["GlobalUrl"], configuration["IdentityUrl"] },
 
