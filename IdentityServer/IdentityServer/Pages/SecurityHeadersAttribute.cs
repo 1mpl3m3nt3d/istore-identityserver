@@ -1,7 +1,6 @@
 // Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
-
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 
@@ -38,6 +37,7 @@ public class SecurityHeadersAttribute : ActionFilterAttribute
             {
                 context.HttpContext.Response.Headers.Add("Content-Security-Policy", csp);
             }
+
             // and once again for IE
             if (!context.HttpContext.Response.Headers.ContainsKey("X-Content-Security-Policy"))
             {

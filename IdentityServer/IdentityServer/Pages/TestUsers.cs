@@ -1,12 +1,13 @@
 // Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
-
-using IdentityModel;
 using System.Security.Claims;
 using System.Text.Json;
+
 using Duende.IdentityServer;
 using Duende.IdentityServer.Test;
+
+using IdentityModel;
 
 namespace IdentityServerHost;
 
@@ -21,9 +22,9 @@ public class TestUsers
                 street_address = "One Hacker Way",
                 locality = "Heidelberg",
                 postal_code = 69118,
-                country = "Germany"
+                country = "Germany",
             };
-                
+
             return new List<TestUser>
             {
                 new TestUser
@@ -39,8 +40,8 @@ public class TestUsers
                         new Claim(JwtClaimTypes.Email, "AliceSmith@email.com"),
                         new Claim(JwtClaimTypes.EmailVerified, "true", ClaimValueTypes.Boolean),
                         new Claim(JwtClaimTypes.WebSite, "http://alice.com"),
-                        new Claim(JwtClaimTypes.Address, JsonSerializer.Serialize(address), IdentityServerConstants.ClaimValueTypes.Json)
-                    }
+                        new Claim(JwtClaimTypes.Address, JsonSerializer.Serialize(address), IdentityServerConstants.ClaimValueTypes.Json),
+                    },
                 },
                 new TestUser
                 {
@@ -55,9 +56,9 @@ public class TestUsers
                         new Claim(JwtClaimTypes.Email, "BobSmith@email.com"),
                         new Claim(JwtClaimTypes.EmailVerified, "true", ClaimValueTypes.Boolean),
                         new Claim(JwtClaimTypes.WebSite, "http://bob.com"),
-                        new Claim(JwtClaimTypes.Address, JsonSerializer.Serialize(address), IdentityServerConstants.ClaimValueTypes.Json)
-                    }
-                }
+                        new Claim(JwtClaimTypes.Address, JsonSerializer.Serialize(address), IdentityServerConstants.ClaimValueTypes.Json),
+                    },
+                },
             };
         }
     }

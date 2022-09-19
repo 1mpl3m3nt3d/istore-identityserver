@@ -1,8 +1,10 @@
 using System.ComponentModel.DataAnnotations;
+
 using Duende.IdentityServer.Events;
 using Duende.IdentityServer.Extensions;
 using Duende.IdentityServer.Services;
 using Duende.IdentityServer.Stores;
+
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
@@ -18,7 +20,8 @@ public class Index : PageModel
     private readonly IResourceStore _resources;
     private readonly IEventService _events;
 
-    public Index(IIdentityServerInteractionService interaction,
+    public Index(
+        IIdentityServerInteractionService interaction,
         IClientStore clients,
         IResourceStore resources,
         IEventService events)
@@ -30,7 +33,7 @@ public class Index : PageModel
     }
 
     public ViewModel View { get; set; }
-        
+
     public async Task OnGet()
     {
         var grants = await _interaction.GetAllUserGrantsAsync();
@@ -53,7 +56,7 @@ public class Index : PageModel
                     Created = grant.CreationTime,
                     Expires = grant.Expiration,
                     IdentityGrantNames = resources.IdentityResources.Select(x => x.DisplayName ?? x.Name).ToArray(),
-                    ApiGrantNames = resources.ApiScopes.Select(x => x.DisplayName ?? x.Name).ToArray()
+                    ApiGrantNames = resources.ApiScopes.Select(x => x.DisplayName ?? x.Name).ToArray(),
                 };
 
                 list.Add(item);
@@ -62,7 +65,7 @@ public class Index : PageModel
 
         View = new ViewModel
         {
-            Grants = list
+            Grants = list,
         };
     }
 
