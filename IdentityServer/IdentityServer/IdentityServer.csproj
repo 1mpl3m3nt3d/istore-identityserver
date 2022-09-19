@@ -20,9 +20,14 @@
     <DockerComposeProjectPath>..\..\docker-compose.dcproj</DockerComposeProjectPath>
   </PropertyGroup>
 
-	<ItemGroup>
-	  <AdditionalFiles Include="..\..\stylecop.json" />
-	</ItemGroup>
+  <ItemGroup>
+    <AdditionalFiles Include="..\..\.dockerignore" />
+    <AdditionalFiles Include="..\..\.editorconfig" />
+    <AdditionalFiles Include="..\..\.gitattributes" />
+    <AdditionalFiles Include="..\..\.gitignore" />
+    <AdditionalFiles Include="..\..\stylecop.json" />
+    <AdditionalFiles Include="..\..\stylecop.ruleset" />
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Duende.IdentityServer" Version="6.1.5" />

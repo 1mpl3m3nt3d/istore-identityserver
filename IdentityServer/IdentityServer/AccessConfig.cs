@@ -51,7 +51,7 @@ public static class AccessConfig
                 PostLogoutRedirectUris =
                 {
                     $"{configuration["SpaUrl"]}/logout/callback",
-                    $"{configuration["GlobalUrl"]}/logout/callback"
+                    $"{configuration["GlobalUrl"]}/logout/callback",
                 },
 
                 AllowedCorsOrigins = { configuration["SpaUrl"], configuration["BasketApi"], configuration["CatalogApi"], configuration["GlobalUrl"], configuration["IdentityUrl"] },
