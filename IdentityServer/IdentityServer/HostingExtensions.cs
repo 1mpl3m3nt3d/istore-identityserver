@@ -1,22 +1,20 @@
 using IdentityServerHost;
 
 using Microsoft.AspNetCore.HttpOverrides;
-//using Microsoft.AspNetCore.Mvc.RazorPages;
+
 using Serilog;
 
 namespace IdentityServer;
 
 internal static class HostingExtensions
 {
-    public static WebApplication ConfigureServices(this WebApplicationBuilder builder)
+    public static WebApplication ConfigureServices(this WebApplicationBuilder builder, IConfiguration? configuration = null)
     {
-        var configuration = new ConfigurationBuilder()
-            .SetBasePath(Directory.GetCurrentDirectory())
-            .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
-            .AddEnvironmentVariables()
-            .Build();
-
-        builder.Services.Configure<AppSettings>(configuration);
+        if (configuration is not null)
+        {
+            //builder.Configuration.AddConfiguration(configuration);
+            builder.Services.Configure<AppSettings>(configuration);
+        }
 
         builder.Services.AddRazorPages();
 
@@ -33,6 +31,9 @@ internal static class HostingExtensions
 
         var isBuilder = builder.Services.AddIdentityServer(options =>
             {
+                options.Authentication.CookieSameSiteMode = SameSiteMode.Unspecified;
+                options.Cors.CorsPolicyName = "CorsPolicy";
+                options.IssuerUri = builder.Configuration["IdentityUrl"];
                 options.Events.RaiseErrorEvents = true;
                 options.Events.RaiseInformationEvents = true;
                 options.Events.RaiseFailureEvents = true;
@@ -74,6 +75,8 @@ internal static class HostingExtensions
         });
         */
 
+        builder.ConfigureNginx();
+
         return builder.Build();
     }
 
@@ -103,7 +106,7 @@ internal static class HostingExtensions
         // By default the options are empty, so you MUST specify what you want.
         var forwardOptions = new ForwardedHeadersOptions
         {
-            ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto,
+            ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedHost | ForwardedHeaders.XForwardedProto,
             RequireHeaderSymmetry = false,
         };
 
@@ -155,5 +158,76 @@ internal static class HostingExtensions
             .RequireAuthorization();
 
         return app;
+    }
+
+    public static WebApplicationBuilder ConfigureNginx(this WebApplicationBuilder builder)
+    {
+        if (builder.Configuration["Nginx:UseNginx"] == "true" || Environment.GetEnvironmentVariable("Nginx__UseNginx") == "true")
+        {
+            try
+            {
+                if (builder.Configuration["Nginx:UseInitFile"] == "true" || Environment.GetEnvironmentVariable("Nginx__UseInitFile") == "true")
+                {
+                    var initFile = builder.Configuration["Nginx:InitFilePath"] ?? Environment.GetEnvironmentVariable("Nginx__InitFilePath") ?? "/tmp/app-initialized";
+
+                    if (!File.Exists(initFile))
+                    {
+                        File.Create(initFile).Close();
+                    }
+
+                    File.SetLastWriteTimeUtc(initFile, DateTime.UtcNow);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Variable <Nginx__UseNginx> is set to 'true', but there was an exception while configuring Initialize File:\n{ex.Message}");
+            }
+
+            try
+            {
+                if (builder.Configuration["Nginx:UseUnixSocket"] == "true" || Environment.GetEnvironmentVariable("Nginx__UseUnixSocket") == "true")
+                {
+                    var unixSocket = builder.Configuration["Nginx:UnixSocketPath"] ?? Environment.GetEnvironmentVariable("Nginx__UnixSocketPath") ?? "/tmp/nginx.socket";
+
+                    builder.WebHost.ConfigureKestrel(kestrel => kestrel.ListenUnixSocket(unixSocket));
+                }
+                else
+                {
+                    var portParsed = int.TryParse(builder.Configuration["PORT"] ?? Environment.GetEnvironmentVariable("PORT"), out var port);
+
+                    if (portParsed)
+                    {
+                        builder.WebHost.ConfigureKestrel(kestrel => kestrel.ListenAnyIP(port));
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Variable <Nginx__UseNginx> is set to 'true', but there was an exception while configuring Kestrel:\n{ex.Message}");
+            }
+        }
+        else
+        {
+            var portEnv = builder.Configuration["PORT"] ?? Environment.GetEnvironmentVariable("PORT");
+
+            try
+            {
+                if (portEnv != null)
+                {
+                    var portParsed = int.TryParse(portEnv, out var port);
+
+                    if (portParsed)
+                    {
+                        builder.WebHost.ConfigureKestrel(kestrel => kestrel.ListenAnyIP(port));
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Variable <PORT> is set to '{portEnv}', but there was an exception while configuring Kestrel:\n{ex.Message}");
+            }
+        }
+
+        return builder;
     }
 }
