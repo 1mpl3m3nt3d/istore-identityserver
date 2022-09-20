@@ -33,7 +33,7 @@ internal static class HostingExtensions
             {
                 options.Authentication.CookieSameSiteMode = SameSiteMode.Unspecified;
                 options.Cors.CorsPolicyName = "CorsPolicy";
-                //options.IssuerUri = builder.Configuration["IdentityUrl"];
+                options.IssuerUri = builder.Configuration["IdentityUrl"];
                 options.Events.RaiseErrorEvents = true;
                 options.Events.RaiseInformationEvents = true;
                 options.Events.RaiseFailureEvents = true;
