@@ -1,2 +1,2 @@
 
-web: bin/start-nginx 'cd $HOME/heroku_output && ./IdentityServer'
+web: cd $HOME/heroku_output /bin/start-nginx ./IdentityServer
