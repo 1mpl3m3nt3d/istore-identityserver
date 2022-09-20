@@ -31,8 +31,8 @@ internal static class HostingExtensions
 
         var isBuilder = builder.Services.AddIdentityServer(options =>
             {
-                //options.Authentication.CookieSameSiteMode = SameSiteMode.Unspecified;
-                //options.Cors.CorsPolicyName = "CorsPolicy";
+                options.Authentication.CookieSameSiteMode = SameSiteMode.Unspecified;
+                options.Cors.CorsPolicyName = "CorsPolicy";
 
                 options.IssuerUri = builder.Configuration["IdentityUrl"];
 
@@ -92,17 +92,19 @@ internal static class HostingExtensions
         // ref: https://stackoverflow.com/questions/69048286/non-https-url-in-identity-server-4-discovery-document
         // ref: https://identityserver4.readthedocs.io/en/latest/topics/mtls.html?highlight=proxy#asp-net-core-setup
 
-        /*
+        var baseUrl = new Uri(app.Configuration["IdentityUrl"]);
+        var scheme = baseUrl.Scheme;
+        var host = baseUrl.Host;
+
         app.Use(async (ctx, next) =>
         {
-            ctx.SetIdentityServerOrigin(app.Configuration["IdentityUrl"]);
+            //ctx.SetIdentityServerOrigin(app.Configuration["IdentityUrl"]);
 
-            //ctx.Request.Scheme = "https";
-            //ctx.Request.Host = new HostString("host.com");
+            ctx.Request.Scheme = scheme;
+            ctx.Request.Host = new HostString(host);
 
             await next();
         });
-        */
 
         // Add the ForwardedHeadersOptions that you want.
         // By default the options are empty, so you MUST specify what you want.
