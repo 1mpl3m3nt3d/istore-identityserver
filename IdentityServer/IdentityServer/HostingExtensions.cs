@@ -31,9 +31,11 @@ internal static class HostingExtensions
 
         var isBuilder = builder.Services.AddIdentityServer(options =>
             {
-                options.Authentication.CookieSameSiteMode = SameSiteMode.Unspecified;
-                options.Cors.CorsPolicyName = "CorsPolicy";
+                //options.Authentication.CookieSameSiteMode = SameSiteMode.Unspecified;
+                //options.Cors.CorsPolicyName = "CorsPolicy";
+
                 options.IssuerUri = builder.Configuration["IdentityUrl"];
+
                 options.Events.RaiseErrorEvents = true;
                 options.Events.RaiseInformationEvents = true;
                 options.Events.RaiseFailureEvents = true;
