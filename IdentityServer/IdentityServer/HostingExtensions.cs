@@ -162,13 +162,13 @@ internal static class HostingExtensions
 
     public static WebApplicationBuilder ConfigureNginx(this WebApplicationBuilder builder)
     {
-        if (builder.Configuration["Nginx:UseNginx"] == "true" || Environment.GetEnvironmentVariable("Nginx__UseNginx") == "true")
+        if (builder.Configuration["Nginx:UseNginx"] == "true")
         {
             try
             {
-                if (builder.Configuration["Nginx:UseInitFile"] == "true" || Environment.GetEnvironmentVariable("Nginx__UseInitFile") == "true")
+                if (builder.Configuration["Nginx:UseInitFile"] == "true")
                 {
-                    var initFile = builder.Configuration["Nginx:InitFilePath"] ?? Environment.GetEnvironmentVariable("Nginx__InitFilePath") ?? "/tmp/app-initialized";
+                    var initFile = builder.Configuration["Nginx:InitFilePath"] ?? "/tmp/app-initialized";
 
                     if (!File.Exists(initFile))
                     {
@@ -180,20 +180,21 @@ internal static class HostingExtensions
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Variable <Nginx__UseNginx> is set to 'true', but there was an exception while configuring Initialize File:\n{ex.Message}");
+                Console.WriteLine($"Variable <UseNginx> is set to 'true', but there was an exception while configuring Initialize File:\n{ex.Message}");
             }
 
             try
             {
-                if (builder.Configuration["Nginx:UseUnixSocket"] == "true" || Environment.GetEnvironmentVariable("Nginx__UseUnixSocket") == "true")
+                if (builder.Configuration["Nginx:UseUnixSocket"] == "true")
                 {
-                    var unixSocket = builder.Configuration["Nginx:UnixSocketPath"] ?? Environment.GetEnvironmentVariable("Nginx__UnixSocketPath") ?? "/tmp/nginx.socket";
+                    var unixSocket = builder.Configuration["Nginx:UnixSocketPath"] ?? "/tmp/nginx.socket";
 
                     builder.WebHost.ConfigureKestrel(kestrel => kestrel.ListenUnixSocket(unixSocket));
                 }
-                else
+
+                if (builder.Configuration["Nginx:UsePort"] == "true")
                 {
-                    var portParsed = int.TryParse(builder.Configuration["PORT"] ?? Environment.GetEnvironmentVariable("PORT"), out var port);
+                    var portParsed = int.TryParse(builder.Configuration["Nginx:Port"], out var port);
 
                     if (portParsed)
                     {
@@ -203,7 +204,7 @@ internal static class HostingExtensions
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Variable <Nginx__UseNginx> is set to 'true', but there was an exception while configuring Kestrel:\n{ex.Message}");
+                Console.WriteLine($"Variable <UseNginx> is set to 'true', but there was an exception while configuring Kestrel:\n{ex.Message}");
             }
         }
         else
