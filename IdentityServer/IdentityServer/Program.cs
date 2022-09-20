@@ -17,10 +17,10 @@ try
         .Enrich.FromLogContext()
         .ReadFrom.Configuration(ctx.Configuration));
 
-    var currentDirectory = AppDomain.CurrentDomain.BaseDirectory;
+    var baseDirectory = AppDomain.CurrentDomain.BaseDirectory;
 
     var configuration = new ConfigurationBuilder()
-    .SetBasePath(currentDirectory)
+    .SetBasePath(baseDirectory)
     .AddJsonFile($"appsettings.json", optional: false, reloadOnChange: true)
     .AddEnvironmentVariables()
     .AddCommandLine(args)
