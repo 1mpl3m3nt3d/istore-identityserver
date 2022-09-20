@@ -38,30 +38,30 @@ public static class AccessConfig
 
                 RedirectUris =
                 {
-                    $"{configuration["SpaUrl"]}/signin-oidc",
-                    $"{configuration["SpaUrl"]}/silentrenew",
-                    $"{configuration["SpaUrl"]}/signout-oidc",
-                    $"{configuration["SpaUrl"]}/logout/callback",
                     $"{configuration["GlobalUrl"]}/signin-oidc",
                     $"{configuration["GlobalUrl"]}/silentrenew",
                     $"{configuration["GlobalUrl"]}/signout-oidc",
                     $"{configuration["GlobalUrl"]}/logout/callback",
+                    $"{configuration["SpaUrl"]}/signin-oidc",
+                    $"{configuration["SpaUrl"]}/silentrenew",
+                    $"{configuration["SpaUrl"]}/signout-oidc",
+                    $"{configuration["SpaUrl"]}/logout/callback",
                 },
 
                 PostLogoutRedirectUris =
                 {
-                    $"{configuration["SpaUrl"]}/logout/callback",
                     $"{configuration["GlobalUrl"]}/logout/callback",
+                    $"{configuration["SpaUrl"]}/logout/callback",
                 },
 
-                AllowedCorsOrigins = { configuration["SpaUrl"], configuration["BasketApi"], configuration["CatalogApi"], configuration["GlobalUrl"], configuration["IdentityUrl"] },
+                AllowedCorsOrigins = { configuration["GlobalUrl"], configuration["IdentityUrl"], configuration["SpaUrl"] },
 
                 RequirePkce = true,
                 RequireConsent = false,
 
                 AllowAccessTokensViaBrowser = true,
 
-                AllowedScopes = { "openid", "profile", "spa", "catalog.bff", "basket.bff" },
+                AllowedScopes = { "openid", "profile", "spa" },
             },
             new Client
             {
@@ -76,9 +76,9 @@ public static class AccessConfig
 
                 PostLogoutRedirectUris = { $"{configuration["CatalogApi"]}/swagger/" },
 
-                AllowedCorsOrigins = { configuration["SpaUrl"], configuration["BasketApi"], configuration["CatalogApi"], configuration["GlobalUrl"], configuration["IdentityUrl"] },
+                AllowedCorsOrigins = { configuration["CatalogApi"], configuration["GlobalUrl"], configuration["IdentityUrl"] },
 
-                AllowedScopes = { "spa", "catalog", "catalog.bff" },
+                AllowedScopes = { "catalog", "catalog.bff", "openid", "profile", "spa" },
             },
             new Client
             {
@@ -93,9 +93,9 @@ public static class AccessConfig
 
                 PostLogoutRedirectUris = { $"{configuration["BasketApi"]}/swagger/" },
 
-                AllowedCorsOrigins = { configuration["SpaUrl"], configuration["BasketApi"], configuration["CatalogApi"], configuration["GlobalUrl"], configuration["IdentityUrl"] },
+                AllowedCorsOrigins = { configuration["BasketApi"], configuration["GlobalUrl"], configuration["IdentityUrl"] },
 
-                AllowedScopes = { "spa", "basket", "basket.bff" },
+                AllowedScopes = { "basket", "basket.bff", "openid", "profile", "spa" },
             },
         };
     }

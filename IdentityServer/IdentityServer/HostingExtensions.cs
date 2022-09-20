@@ -110,9 +110,12 @@ internal static class HostingExtensions
         });
         */
 
-        var serverUrls = app.Services.GetRequiredService<IServerUrls>();
+        var serverUrls = app.Services.GetService<IServerUrls>();
 
-        serverUrls.Origin = app.Configuration["IdentityUrl"];
+        if (serverUrls is not null)
+        {
+            serverUrls.Origin = app.Configuration["IdentityUrl"];
+        }
 
         // Add the ForwardedHeadersOptions that you want.
         // By default the options are empty, so you MUST specify what you want.
