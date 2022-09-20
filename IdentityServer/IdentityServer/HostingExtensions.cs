@@ -236,8 +236,6 @@ internal static class HostingExtensions
             }
         }
 
-        builder.WebHost.UseWebRoot(Directory.GetCurrentDirectory());
-
         return builder;
     }
 }
