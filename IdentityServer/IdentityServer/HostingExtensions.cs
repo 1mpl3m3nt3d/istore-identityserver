@@ -75,10 +75,6 @@ internal static class HostingExtensions
         });
         */
 
-        var baseDirectory = AppDomain.CurrentDomain.BaseDirectory;
-
-        builder.WebHost.UseContentRoot(baseDirectory);
-
         builder.ConfigureNginx();
 
         return builder.Build();
