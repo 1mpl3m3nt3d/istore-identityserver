@@ -1,2 +1,2 @@
 
-web: bin/start-nginx 'sh -c cd "/app/heroku_output" ; ./IdentityServer'
+web: $HOME/bin/start-nginx $HOME/heroku_output/IdentityServer
