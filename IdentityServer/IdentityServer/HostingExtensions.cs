@@ -98,26 +98,28 @@ internal static class HostingExtensions
         {
             var identityUri = new Uri(app.Configuration["IdentityUrl"]);
 
+            var identityUrl = $"{identityUri.Scheme}://{identityUri.Host}:{identityUri.Port}";
+
             if (identityUri is not null)
             {
-                ctx.Request.Scheme = identityUri.Scheme + "://" + identityUri.Scheme + "://";
+                ctx.Request.Scheme = identityUri.Scheme;
                 ctx.Request.Host = new HostString(identityUri.Host);
 
                 var requestUrls = ctx.Request.HttpContext.RequestServices.GetService<IServerUrls>();
 
                 if (requestUrls is not null)
                 {
-                    requestUrls.Origin = identityUri.Scheme + "://" + identityUri.Scheme + "://" + identityUri.Host + identityUri.Port;
+                    requestUrls.Origin = identityUrl;
                 }
 
                 var responseUrls = ctx.Response.HttpContext.RequestServices.GetService<IServerUrls>();
 
                 if (responseUrls is not null)
                 {
-                    responseUrls.Origin = identityUri.Scheme + "://" + identityUri.Scheme + "://" + identityUri.Host + identityUri.Port;
+                    responseUrls.Origin = identityUrl;
                 }
 
-                //ctx.SetIdentityServerOrigin(identityUri.Scheme + "://" + identityUri.Host + identityUri.Port);
+                //ctx.SetIdentityServerOrigin(identityUrl); // Obsolete
             }
 
             await next();
