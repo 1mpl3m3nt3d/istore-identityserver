@@ -1,5 +1,7 @@
 using System.Net;
 
+using Duende.IdentityServer.Services;
+
 using IdentityServerHost;
 
 using Microsoft.AspNetCore.HttpOverrides;
@@ -22,6 +24,7 @@ internal static class HostingExtensions
         builder.Services.Configure<ForwardedHeadersOptions>(options =>
         {
             options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedHost | ForwardedHeaders.XForwardedProto;
+            options.ForwardLimit = 1;
             options.RequireHeaderSymmetry = false;
         });
 
@@ -115,7 +118,6 @@ internal static class HostingExtensions
         // ref: https://stackoverflow.com/questions/69048286/non-https-url-in-identity-server-4-discovery-document
         // ref: https://identityserver4.readthedocs.io/en/latest/topics/mtls.html?highlight=proxy#asp-net-core-setup
 
-        /*
         app.Use(async (ctx, next) =>
         {
             var identityUri = new Uri(app.Configuration["IdentityUrl"]);
@@ -153,7 +155,6 @@ internal static class HostingExtensions
 
             await next(ctx);
         });
-        */
 
         app.UseCertificateForwarding();
 
@@ -194,10 +195,86 @@ internal static class HostingExtensions
         app.UseAuthorization();
         app.UseAuthentication();
 
+        app.Use(async (ctx, next) =>
+        {
+            var identityUri = new Uri(app.Configuration["IdentityUrl"]);
+            var identityUrl = $"{identityUri.Scheme}://{identityUri.Host}{(identityUri.IsDefaultPort ? string.Empty : $":{identityUri.Port}")}";
+
+            Console.WriteLine($"\nUpgrading Origin to {identityUrl}\n");
+
+            if (identityUri is not null)
+            {
+                var contextUrls = ctx.RequestServices.GetService<IServerUrls>();
+
+                if (contextUrls is not null)
+                {
+                    contextUrls.Origin = identityUrl;
+                }
+
+                var requestUrls = ctx.Request.HttpContext.RequestServices.GetService<IServerUrls>();
+
+                if (requestUrls is not null)
+                {
+                    requestUrls.Origin = identityUrl;
+                }
+
+                var responseUrls = ctx.Response.HttpContext.RequestServices.GetService<IServerUrls>();
+
+                if (responseUrls is not null)
+                {
+                    responseUrls.Origin = identityUrl;
+                }
+
+                ctx.Request.Scheme = identityUri.Scheme;
+
+                ctx.Request.Host = new HostString(identityUri.Host);
+            }
+
+            await next(ctx);
+        });
+
         app.UseEndpoints(endpoints => endpoints.MapDefaultControllerRoute());
 
         app.MapRazorPages()
             .RequireAuthorization();
+
+        app.Use(async (ctx, next) =>
+        {
+            var identityUri = new Uri(app.Configuration["IdentityUrl"]);
+            var identityUrl = $"{identityUri.Scheme}://{identityUri.Host}{(identityUri.IsDefaultPort ? string.Empty : $":{identityUri.Port}")}";
+
+            Console.WriteLine($"\nUpgrading Origin to {identityUrl}\n");
+
+            if (identityUri is not null)
+            {
+                var contextUrls = ctx.RequestServices.GetService<IServerUrls>();
+
+                if (contextUrls is not null)
+                {
+                    contextUrls.Origin = identityUrl;
+                }
+
+                var requestUrls = ctx.Request.HttpContext.RequestServices.GetService<IServerUrls>();
+
+                if (requestUrls is not null)
+                {
+                    requestUrls.Origin = identityUrl;
+                }
+
+                var responseUrls = ctx.Response.HttpContext.RequestServices.GetService<IServerUrls>();
+
+                if (responseUrls is not null)
+                {
+                    responseUrls.Origin = identityUrl;
+                }
+
+                ctx.Request.Scheme = identityUri.Scheme;
+
+                ctx.Request.Host = new HostString(identityUri.Host);
+            }
+
+            await next(ctx);
+        });
 
         return app;
     }
