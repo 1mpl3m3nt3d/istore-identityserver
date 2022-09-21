@@ -1,6 +1,3 @@
-using Duende.IdentityServer.Extensions;
-using Duende.IdentityServer.Services;
-
 using IdentityServerHost;
 
 using Microsoft.AspNetCore.HttpOverrides;
@@ -13,13 +10,17 @@ internal static class HostingExtensions
 {
     public static WebApplication ConfigureServices(this WebApplicationBuilder builder, IConfiguration? configuration = null)
     {
+        builder.Services.AddRazorPages();
+
         if (configuration is not null)
         {
-            //builder.Configuration.AddConfiguration(configuration);
             builder.Services.Configure<AppSettings>(configuration);
         }
 
-        builder.Services.AddRazorPages();
+        builder.Services.Configure<ForwardedHeadersOptions>(options =>
+        {
+            options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+        });
 
         builder.Services.AddCors(
             options => options
@@ -36,8 +37,6 @@ internal static class HostingExtensions
             {
                 options.Authentication.CookieSameSiteMode = SameSiteMode.Unspecified;
                 options.Cors.CorsPolicyName = "CorsPolicy";
-
-                options.IssuerUri = builder.Configuration["IdentityUrl"];
 
                 options.Events.RaiseErrorEvents = true;
                 options.Events.RaiseInformationEvents = true;
@@ -96,74 +95,57 @@ internal static class HostingExtensions
         // ref: https://stackoverflow.com/questions/69048286/non-https-url-in-identity-server-4-discovery-document
         // ref: https://identityserver4.readthedocs.io/en/latest/topics/mtls.html?highlight=proxy#asp-net-core-setup
 
+        app.UseCertificateForwarding();
+
         app.Use(async (ctx, next) =>
         {
             var identityUri = new Uri(app.Configuration["IdentityUrl"]);
 
-            var identityUrl = $"{identityUri.Scheme}://{identityUri.Host}:{identityUri.Port}";
+            //var identityUrl = $"{identityUri.Scheme}://{identityUri.Host}:{identityUri.Port}";
 
             if (identityUri is not null)
             {
                 ctx.Request.Scheme = identityUri.Scheme;
-                ctx.Request.Host = new HostString(identityUri.Host);
+                //ctx.Request.Host = new HostString(identityUri.Host);
 
-                var contextUrls = ctx.RequestServices.GetService<IServerUrls>();
+                //var contextUrls = ctx.RequestServices.GetService<IServerUrls>();
 
-                if (contextUrls is not null)
-                {
-                    contextUrls.Origin = identityUrl;
-                }
+                //if (contextUrls is not null)
+                //{
+                //    contextUrls.Origin = identityUrl;
+                //}
 
-                var requestUrls = ctx.Request.HttpContext.RequestServices.GetService<IServerUrls>();
+                //var requestUrls = ctx.Request.HttpContext.RequestServices.GetService<IServerUrls>();
 
-                if (requestUrls is not null)
-                {
-                    requestUrls.Origin = identityUrl;
-                }
+                //if (requestUrls is not null)
+                //{
+                //   requestUrls.Origin = identityUrl;
+                //}
 
-                var responseUrls = ctx.Response.HttpContext.RequestServices.GetService<IServerUrls>();
+                //var responseUrls = ctx.Response.HttpContext.RequestServices.GetService<IServerUrls>();
 
-                if (responseUrls is not null)
-                {
-                    responseUrls.Origin = identityUrl;
-                }
+                //if (responseUrls is not null)
+                //{
+                //    responseUrls.Origin = identityUrl;
+                //}
 
-                ctx.SetIdentityServerOrigin(identityUrl);
+                //ctx.SetIdentityServerOrigin(identityUrl);
             }
 
-            await next();
+            await next(ctx);
         });
-
-        // Add the ForwardedHeadersOptions that you want.
-        // By default the options are empty, so you MUST specify what you want.
-        var forwardOptions = new ForwardedHeadersOptions
-        {
-            ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedHost | ForwardedHeaders.XForwardedProto,
-            RequireHeaderSymmetry = false,
-        };
-
-        // Clear the forward headers networks so any ip can forward headers
-        // Should ONLY do this in dev/testing
-        //forwardOptions.KnownNetworks.Clear();
-        //forwardOptions.KnownProxies.Clear();
-
-        // For security you should limit the networks that can forward headers
-        // Adding a network with a mask
-        // forwardOptions.KnownNetworks.Add(new IPNetwork(IPAddress.Parse("::ffff:111.11.1.0"), 16));
-        // OR adding specific ips
-        //forwardOptions.KnownProxies.Add(IPAddress.Parse("::ffff:101.1.0.1"));
-
-        app.UseForwardedHeaders(forwardOptions);
 
         app.UseSerilogRequestLogging();
 
         if (app.Environment.IsDevelopment())
         {
             app.UseDeveloperExceptionPage();
+            app.UseForwardedHeaders();
         }
         else
         {
             app.UseExceptionHandler("/Error");
+            app.UseForwardedHeaders();
             // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
             app.UseHsts();
             app.UseHttpsRedirection();
@@ -184,7 +166,11 @@ internal static class HostingExtensions
         app.UseCors("CorsPolicy");
 
         app.UseIdentityServer();
+
         app.UseAuthorization();
+        app.UseAuthentication();
+
+        app.UseEndpoints(endpoints => endpoints.MapDefaultControllerRoute());
 
         app.MapRazorPages()
             .RequireAuthorization();
