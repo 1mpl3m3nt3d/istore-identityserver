@@ -94,22 +94,31 @@ internal static class HostingExtensions
         // ref: https://stackoverflow.com/questions/69048286/non-https-url-in-identity-server-4-discovery-document
         // ref: https://identityserver4.readthedocs.io/en/latest/topics/mtls.html?highlight=proxy#asp-net-core-setup
 
-        //var baseUrl = new Uri(app.Configuration["IdentityUrl"]);
-        //var scheme = baseUrl.Scheme;
-        //var host = baseUrl.Host;
-
         app.Use(async (ctx, next) =>
         {
-            var urls = ctx.Response.HttpContext.RequestServices.GetService<IServerUrls>();
+            var identityUri = new Uri(app.Configuration["IdentityUrl"]);
 
-            if (urls is not null)
+            if (identityUri is not null)
             {
-                urls.Origin = app.Configuration["IdentityUrl"];
-            }
+                ctx.Request.Scheme = identityUri.Scheme + "://";
+                ctx.Request.Host = new HostString(identityUri.Host);
 
-            //ctx.SetIdentityServerOrigin(app.Configuration["IdentityUrl"]);
-            //ctx.Request.Scheme = scheme;
-            //ctx.Request.Host = new HostString(host);
+                var requestUrls = ctx.Request.HttpContext.RequestServices.GetService<IServerUrls>();
+
+                if (requestUrls is not null)
+                {
+                    requestUrls.Origin = identityUri.Scheme + "://" + identityUri.Host + identityUri.Port;
+                }
+
+                var responseUrls = ctx.Response.HttpContext.RequestServices.GetService<IServerUrls>();
+
+                if (responseUrls is not null)
+                {
+                    responseUrls.Origin = identityUri.Scheme + "://" + identityUri.Host + identityUri.Port;
+                }
+
+                //ctx.SetIdentityServerOrigin(identityUri.Scheme + "://" + identityUri.Host + identityUri.Port);
+            }
 
             await next();
         });
