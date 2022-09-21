@@ -1,3 +1,4 @@
+using Duende.IdentityServer.Extensions;
 using Duende.IdentityServer.Services;
 
 using IdentityServerHost;
@@ -84,6 +85,7 @@ internal static class HostingExtensions
         return builder.Build();
     }
 
+    [Obsolete]
     public static WebApplication ConfigurePipeline(this WebApplication app)
     {
         // ref: https://docs.microsoft.com/en-us/aspnet/core/fundamentals/middleware/?view=aspnetcore-6.0#middleware-order
@@ -126,7 +128,7 @@ internal static class HostingExtensions
                     responseUrls.Origin = identityUrl;
                 }
 
-                //ctx.SetIdentityServerOrigin(identityUrl); // Obsolete
+                ctx.SetIdentityServerOrigin(identityUrl);
             }
 
             await next();
