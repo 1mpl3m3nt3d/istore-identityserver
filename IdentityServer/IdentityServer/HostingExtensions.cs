@@ -100,7 +100,7 @@ internal static class HostingExtensions
 
         app.Use(async (ctx, next) =>
         {
-            var urls = ctx.Request.HttpContext.RequestServices.GetService<IServerUrls>();
+            var urls = ctx.Response.HttpContext.RequestServices.GetService<IServerUrls>();
 
             if (urls is not null)
             {
