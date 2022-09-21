@@ -119,7 +119,6 @@ internal static class HostingExtensions
         if (app.Environment.IsDevelopment())
         {
             app.UseDeveloperExceptionPage();
-            app.UseCertificateForwarding();
             app.UseForwardedHeaders();
         }
         else
@@ -132,8 +131,12 @@ internal static class HostingExtensions
                 app.UseCertificateForwarding();
                 // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
                 app.UseHsts();
-                app.UseHttpsRedirection();
             }
+        }
+
+        if (app.Configuration["Nginx:UseNginx"] != "true")
+        {
+            app.UseHttpsRedirection();
         }
 
         app.UseStaticFiles();
@@ -194,17 +197,27 @@ internal static class HostingExtensions
             await next(ctx);
         });
 
+        //app.UseRequestLocalization();
+
         app.UseCors("CorsPolicy");
+
+        app.UseCertificateForwarding();
 
         app.UseIdentityServer();
 
-        app.UseAuthorization();
         app.UseAuthentication();
+        app.UseAuthorization();
 
-        app.UseEndpoints(endpoints => endpoints.MapDefaultControllerRoute());
+        //app.UseSession();
+        //app.UseResponseCompression();
+        //app.UseResponseCaching();
 
         app.MapRazorPages()
             .RequireAuthorization();
+
+        app.UseEndpoints(
+            endpoints =>
+            endpoints.MapDefaultControllerRoute());
 
         return app;
     }
