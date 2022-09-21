@@ -48,17 +48,23 @@ internal static class HostingExtensions
                 options.MaxAge = TimeSpan.FromDays(60);
             });
 
+            var isPortParsed = int.TryParse(builder.Configuration["HTTPS_PORT"], out var httpsPort);
+
             builder.Services.AddHttpsRedirection(options =>
             {
-                options.RedirectStatusCode = (int)HttpStatusCode.PermanentRedirect;
-                options.HttpsPort = 443;
+                options.RedirectStatusCode = (int)HttpStatusCode.TemporaryRedirect;
+
+                if (isPortParsed)
+                {
+                    options.HttpsPort = httpsPort;
+                }
             });
         }
 
         var isBuilder = builder.Services.AddIdentityServer(options =>
             {
-                options.Authentication.CookieSameSiteMode = SameSiteMode.Unspecified;
-                options.Cors.CorsPolicyName = "CorsPolicy";
+                //options.Authentication.CookieSameSiteMode = SameSiteMode.Unspecified;
+                //options.Cors.CorsPolicyName = "CorsPolicy";
 
                 options.Events.RaiseErrorEvents = true;
                 options.Events.RaiseInformationEvents = true;
@@ -110,6 +116,38 @@ internal static class HostingExtensions
     {
         app.UseSerilogRequestLogging();
 
+        if (app.Environment.IsDevelopment())
+        {
+            app.UseDeveloperExceptionPage();
+            app.UseCertificateForwarding();
+            app.UseForwardedHeaders();
+        }
+        else
+        {
+            app.UseExceptionHandler("/Error");
+            app.UseForwardedHeaders();
+
+            if (app.Configuration["Nginx:UseNginx"] != "true")
+            {
+                app.UseCertificateForwarding();
+                // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
+                app.UseHsts();
+                app.UseHttpsRedirection();
+            }
+        }
+
+        app.UseStaticFiles();
+
+        app.UseCookiePolicy(
+            new CookiePolicyOptions
+            {
+                HttpOnly = Microsoft.AspNetCore.CookiePolicy.HttpOnlyPolicy.None,
+                MinimumSameSitePolicy = SameSiteMode.Unspecified,
+                Secure = CookieSecurePolicy.SameAsRequest,
+            });
+
+        app.UseRouting();
+
         // ref: https://docs.microsoft.com/en-us/aspnet/core/fundamentals/middleware/?view=aspnetcore-6.0#middleware-order
         // ref: https://docs.microsoft.com/en-us/aspnet/core/host-and-deploy/proxy-load-balancer?view=aspnetcore-6.0
         // ref: https://github.com/aspnet/Docs/issues/2384
@@ -156,38 +194,6 @@ internal static class HostingExtensions
             await next(ctx);
         });
 
-        app.UseCertificateForwarding();
-
-        if (app.Environment.IsDevelopment())
-        {
-            app.UseDeveloperExceptionPage();
-            app.UseForwardedHeaders();
-        }
-        else
-        {
-            app.UseExceptionHandler("/Error");
-            app.UseForwardedHeaders();
-
-            if (app.Configuration["Nginx:UseNginx"] != "true")
-            {
-                // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
-                app.UseHsts();
-                app.UseHttpsRedirection();
-            }
-        }
-
-        app.UseStaticFiles();
-
-        app.UseCookiePolicy(
-            new CookiePolicyOptions
-            {
-                HttpOnly = Microsoft.AspNetCore.CookiePolicy.HttpOnlyPolicy.None,
-                MinimumSameSitePolicy = SameSiteMode.Unspecified,
-                Secure = CookieSecurePolicy.SameAsRequest,
-            });
-
-        app.UseRouting();
-
         app.UseCors("CorsPolicy");
 
         app.UseIdentityServer();
@@ -195,86 +201,10 @@ internal static class HostingExtensions
         app.UseAuthorization();
         app.UseAuthentication();
 
-        app.Use(async (ctx, next) =>
-        {
-            var identityUri = new Uri(app.Configuration["IdentityUrl"]);
-            var identityUrl = $"{identityUri.Scheme}://{identityUri.Host}{(identityUri.IsDefaultPort ? string.Empty : $":{identityUri.Port}")}";
-
-            Console.WriteLine($"\nUpgrading Origin to {identityUrl}\n");
-
-            if (identityUri is not null)
-            {
-                var contextUrls = ctx.RequestServices.GetService<IServerUrls>();
-
-                if (contextUrls is not null)
-                {
-                    contextUrls.Origin = identityUrl;
-                }
-
-                var requestUrls = ctx.Request.HttpContext.RequestServices.GetService<IServerUrls>();
-
-                if (requestUrls is not null)
-                {
-                    requestUrls.Origin = identityUrl;
-                }
-
-                var responseUrls = ctx.Response.HttpContext.RequestServices.GetService<IServerUrls>();
-
-                if (responseUrls is not null)
-                {
-                    responseUrls.Origin = identityUrl;
-                }
-
-                ctx.Request.Scheme = identityUri.Scheme;
-
-                ctx.Request.Host = new HostString(identityUri.Host);
-            }
-
-            await next(ctx);
-        });
-
         app.UseEndpoints(endpoints => endpoints.MapDefaultControllerRoute());
 
         app.MapRazorPages()
             .RequireAuthorization();
-
-        app.Use(async (ctx, next) =>
-        {
-            var identityUri = new Uri(app.Configuration["IdentityUrl"]);
-            var identityUrl = $"{identityUri.Scheme}://{identityUri.Host}{(identityUri.IsDefaultPort ? string.Empty : $":{identityUri.Port}")}";
-
-            Console.WriteLine($"\nUpgrading Origin to {identityUrl}\n");
-
-            if (identityUri is not null)
-            {
-                var contextUrls = ctx.RequestServices.GetService<IServerUrls>();
-
-                if (contextUrls is not null)
-                {
-                    contextUrls.Origin = identityUrl;
-                }
-
-                var requestUrls = ctx.Request.HttpContext.RequestServices.GetService<IServerUrls>();
-
-                if (requestUrls is not null)
-                {
-                    requestUrls.Origin = identityUrl;
-                }
-
-                var responseUrls = ctx.Response.HttpContext.RequestServices.GetService<IServerUrls>();
-
-                if (responseUrls is not null)
-                {
-                    responseUrls.Origin = identityUrl;
-                }
-
-                ctx.Request.Scheme = identityUri.Scheme;
-
-                ctx.Request.Host = new HostString(identityUri.Host);
-            }
-
-            await next(ctx);
-        });
 
         return app;
     }
