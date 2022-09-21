@@ -1,7 +1,5 @@
 using System.Net;
 
-using Duende.IdentityServer.Services;
-
 using IdentityServerHost;
 
 using Microsoft.AspNetCore.HttpOverrides;
@@ -134,6 +132,7 @@ internal static class HostingExtensions
             app.UseHttpsRedirection();
         }
 
+        /*
         app.Use(async (ctx, next) =>
         {
             var identityUri = new Uri(app.Configuration["IdentityUrl"]);
@@ -154,6 +153,7 @@ internal static class HostingExtensions
 
             await next(ctx);
         });
+        */
 
         app.UseStaticFiles();
 
