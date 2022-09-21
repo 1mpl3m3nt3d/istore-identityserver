@@ -100,21 +100,21 @@ internal static class HostingExtensions
 
             if (identityUri is not null)
             {
-                ctx.Request.Scheme = identityUri.Scheme + "://";
+                ctx.Request.Scheme = identityUri.Scheme + "://" + identityUri.Scheme + "://";
                 ctx.Request.Host = new HostString(identityUri.Host);
 
                 var requestUrls = ctx.Request.HttpContext.RequestServices.GetService<IServerUrls>();
 
                 if (requestUrls is not null)
                 {
-                    requestUrls.Origin = identityUri.Scheme + "://" + identityUri.Host + identityUri.Port;
+                    requestUrls.Origin = identityUri.Scheme + "://" + identityUri.Scheme + "://" + identityUri.Host + identityUri.Port;
                 }
 
                 var responseUrls = ctx.Response.HttpContext.RequestServices.GetService<IServerUrls>();
 
                 if (responseUrls is not null)
                 {
-                    responseUrls.Origin = identityUri.Scheme + "://" + identityUri.Host + identityUri.Port;
+                    responseUrls.Origin = identityUri.Scheme + "://" + identityUri.Scheme + "://" + identityUri.Host + identityUri.Port;
                 }
 
                 //ctx.SetIdentityServerOrigin(identityUri.Scheme + "://" + identityUri.Host + identityUri.Port);
