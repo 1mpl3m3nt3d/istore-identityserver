@@ -1,5 +1,7 @@
 using System.Net;
 
+using Duende.IdentityServer.Services;
+
 using IdentityServerHost;
 
 using Microsoft.AspNetCore.HttpOverrides;
@@ -132,7 +134,6 @@ internal static class HostingExtensions
             app.UseHttpsRedirection();
         }
 
-        /*
         app.Use(async (ctx, next) =>
         {
             var identityUri = new Uri(app.Configuration["IdentityUrl"]);
@@ -147,13 +148,12 @@ internal static class HostingExtensions
                     contextUrls.Origin = identityUrl;
                 }
 
-                //ctx.Request.Scheme = identityUri.Scheme;
-                //ctx.Request.Host = new HostString(identityUri.Host);
+                ctx.Request.Scheme = identityUri.Scheme;
+                ctx.Request.Host = new HostString(identityUri.Host);
             }
 
             await next(ctx);
         });
-        */
 
         app.UseStaticFiles();
 
@@ -186,9 +186,11 @@ internal static class HostingExtensions
         app.MapRazorPages()
             .RequireAuthorization();
 
+        /*
         app.UseEndpoints(
             endpoints =>
             endpoints.MapDefaultControllerRoute());
+        */
 
         return app;
     }
