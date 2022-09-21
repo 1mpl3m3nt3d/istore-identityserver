@@ -105,6 +105,13 @@ internal static class HostingExtensions
                 ctx.Request.Scheme = identityUri.Scheme;
                 ctx.Request.Host = new HostString(identityUri.Host);
 
+                var contextUrls = ctx.RequestServices.GetService<IServerUrls>();
+
+                if (contextUrls is not null)
+                {
+                    contextUrls.Origin = identityUrl;
+                }
+
                 var requestUrls = ctx.Request.HttpContext.RequestServices.GetService<IServerUrls>();
 
                 if (requestUrls is not null)
