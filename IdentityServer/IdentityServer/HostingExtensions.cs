@@ -64,6 +64,9 @@ internal static class HostingExtensions
         var isBuilder = builder.Services.AddIdentityServer(options =>
             {
                 options.Authentication.CookieSameSiteMode = SameSiteMode.Unspecified;
+                options.Authentication.CookieSlidingExpiration = true;
+                options.Authentication.CookieLifetime = TimeSpan.FromDays(30);
+
                 options.Cors.CorsPolicyName = "CorsPolicy";
 
                 options.Events.RaiseErrorEvents = true;
@@ -106,6 +109,13 @@ internal static class HostingExtensions
             options.ClientSecret = "copy client secret from Google here";
         });
         */
+
+        builder.Services.ConfigureApplicationCookie(
+            options =>
+            {
+                options.ExpireTimeSpan = TimeSpan.FromDays(30);
+                options.SlidingExpiration = true;
+            });
 
         builder.ConfigureNginx();
 
