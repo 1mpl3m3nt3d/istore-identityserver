@@ -119,23 +119,18 @@ internal static class HostingExtensions
         if (app.Environment.IsDevelopment())
         {
             app.UseDeveloperExceptionPage();
-            app.UseForwardedHeaders();
         }
         else
         {
             app.UseExceptionHandler("/Error");
-            app.UseForwardedHeaders();
-
-            if (app.Configuration["Nginx:UseNginx"] != "true")
-            {
-                app.UseCertificateForwarding();
-                // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
-                app.UseHsts();
-            }
         }
+
+        app.UseForwardedHeaders();
 
         if (app.Configuration["Nginx:UseNginx"] != "true")
         {
+            // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
+            app.UseHsts();
             app.UseHttpsRedirection();
         }
 
@@ -144,9 +139,7 @@ internal static class HostingExtensions
             var identityUri = new Uri(app.Configuration["IdentityUrl"]);
             var identityUrl = $"{identityUri.Scheme}://{identityUri.Host}{(identityUri.IsDefaultPort ? string.Empty : $":{identityUri.Port}")}";
 
-            Console.WriteLine($"\nUpgrading Origin to {identityUrl}\n");
-
-            if (identityUri is not null)
+            if (identityUri is not null && identityUrl is not null)
             {
                 var contextUrls = ctx.RequestServices.GetService<IServerUrls>();
 
@@ -155,23 +148,8 @@ internal static class HostingExtensions
                     contextUrls.Origin = identityUrl;
                 }
 
-                var requestUrls = ctx.Request.HttpContext.RequestServices.GetService<IServerUrls>();
-
-                if (requestUrls is not null)
-                {
-                    requestUrls.Origin = identityUrl;
-                }
-
-                var responseUrls = ctx.Response.HttpContext.RequestServices.GetService<IServerUrls>();
-
-                if (responseUrls is not null)
-                {
-                    responseUrls.Origin = identityUrl;
-                }
-
-                ctx.Request.Scheme = identityUri.Scheme;
-
-                ctx.Request.Host = new HostString(identityUri.Host);
+                //ctx.Request.Scheme = identityUri.Scheme;
+                //ctx.Request.Host = new HostString(identityUri.Host);
             }
 
             await next(ctx);
@@ -179,6 +157,7 @@ internal static class HostingExtensions
 
         app.UseStaticFiles();
 
+        /*
         app.UseCookiePolicy(
             new CookiePolicyOptions
             {
@@ -186,6 +165,7 @@ internal static class HostingExtensions
                 MinimumSameSitePolicy = SameSiteMode.Unspecified,
                 Secure = CookieSecurePolicy.SameAsRequest,
             });
+        */
 
         app.UseRouting();
 
@@ -194,10 +174,9 @@ internal static class HostingExtensions
         app.UseCors("CorsPolicy");
 
         //app.UseCertificateForwarding();
+        //app.UseAuthentication();
 
         app.UseIdentityServer();
-
-        //app.UseAuthentication();
         app.UseAuthorization();
 
         //app.UseSession();
