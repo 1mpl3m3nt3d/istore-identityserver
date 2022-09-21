@@ -1,3 +1,5 @@
+using System.Net;
+
 using IdentityServerHost;
 
 using Microsoft.AspNetCore.HttpOverrides;
@@ -33,6 +35,22 @@ internal static class HostingExtensions
                 .AllowAnyHeader()
                 .AllowAnyMethod()
                 .AllowCredentials()));
+
+        if (!builder.Environment.IsDevelopment() && builder.Configuration["Nginx:UseNginx"] != "true")
+        {
+            builder.Services.AddHsts(options =>
+            {
+                options.Preload = true;
+                options.IncludeSubDomains = true;
+                options.MaxAge = TimeSpan.FromDays(60);
+            });
+
+            builder.Services.AddHttpsRedirection(options =>
+            {
+                options.RedirectStatusCode = (int)HttpStatusCode.PermanentRedirect;
+                options.HttpsPort = 443;
+            });
+        }
 
         var isBuilder = builder.Services.AddIdentityServer(options =>
             {
@@ -85,7 +103,6 @@ internal static class HostingExtensions
         return builder.Build();
     }
 
-    [Obsolete]
     public static WebApplication ConfigurePipeline(this WebApplication app)
     {
         app.UseSerilogRequestLogging();
@@ -98,17 +115,16 @@ internal static class HostingExtensions
         // ref: https://stackoverflow.com/questions/69048286/non-https-url-in-identity-server-4-discovery-document
         // ref: https://identityserver4.readthedocs.io/en/latest/topics/mtls.html?highlight=proxy#asp-net-core-setup
 
+        /*
         app.Use(async (ctx, next) =>
         {
             var identityUri = new Uri(app.Configuration["IdentityUrl"]);
-            //var identityUrl = $"{identityUri.Scheme}://{identityUri.Host}{(identityUri.IsDefaultPort ? string.Empty : $":{identityUri.Port}")}";
+            var identityUrl = $"{identityUri.Scheme}://{identityUri.Host}{(identityUri.IsDefaultPort ? string.Empty : $":{identityUri.Port}")}";
 
-            Console.WriteLine($"\nUpgrading Origin to {identityUri.OriginalString}\n");
-            //Console.WriteLine($"\nUpgrading Origin to {identityUrl}\n");
+            Console.WriteLine($"\nUpgrading Origin to {identityUrl}\n");
 
             if (identityUri is not null)
             {
-                /*
                 var contextUrls = ctx.RequestServices.GetService<IServerUrls>();
 
                 if (contextUrls is not null)
@@ -129,22 +145,15 @@ internal static class HostingExtensions
                 {
                     responseUrls.Origin = identityUrl;
                 }
-                */
 
-                if (app.Environment.IsProduction())
-                {
-                    ctx.Request.Scheme = "https";
-                }
-                else
-                {
-                    ctx.Request.Scheme = identityUri.Scheme;
-                }
+                ctx.Request.Scheme = identityUri.Scheme;
 
-                //ctx.Request.Host = new HostString(identityUri.Host);
+                ctx.Request.Host = new HostString(identityUri.Host);
             }
 
             await next(ctx);
         });
+        */
 
         app.UseCertificateForwarding();
 
@@ -157,9 +166,13 @@ internal static class HostingExtensions
         {
             app.UseExceptionHandler("/Error");
             app.UseForwardedHeaders();
-            // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
-            //app.UseHsts();
-            //app.UseHttpsRedirection();
+
+            if (app.Configuration["Nginx:UseNginx"] != "true")
+            {
+                // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
+                app.UseHsts();
+                app.UseHttpsRedirection();
+            }
         }
 
         app.UseStaticFiles();
