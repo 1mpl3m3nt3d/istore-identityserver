@@ -63,8 +63,8 @@ internal static class HostingExtensions
 
         var isBuilder = builder.Services.AddIdentityServer(options =>
             {
-                //options.Authentication.CookieSameSiteMode = SameSiteMode.Unspecified;
-                //options.Cors.CorsPolicyName = "CorsPolicy";
+                options.Authentication.CookieSameSiteMode = SameSiteMode.Unspecified;
+                options.Cors.CorsPolicyName = "CorsPolicy";
 
                 options.Events.RaiseErrorEvents = true;
                 options.Events.RaiseInformationEvents = true;
@@ -148,8 +148,8 @@ internal static class HostingExtensions
                     contextUrls.Origin = identityUrl;
                 }
 
-                ctx.Request.Scheme = identityUri.Scheme;
-                ctx.Request.Host = new HostString(identityUri.Host);
+                //ctx.Request.Scheme = identityUri.Scheme;
+                //ctx.Request.Host = new HostString(identityUri.Host);
             }
 
             await next(ctx);
@@ -157,7 +157,6 @@ internal static class HostingExtensions
 
         app.UseStaticFiles();
 
-        /*
         app.UseCookiePolicy(
             new CookiePolicyOptions
             {
@@ -165,7 +164,6 @@ internal static class HostingExtensions
                 MinimumSameSitePolicy = SameSiteMode.Unspecified,
                 Secure = CookieSecurePolicy.SameAsRequest,
             });
-        */
 
         app.UseRouting();
 
@@ -173,8 +171,8 @@ internal static class HostingExtensions
 
         app.UseCors("CorsPolicy");
 
-        //app.UseCertificateForwarding();
-        //app.UseAuthentication();
+        app.UseCertificateForwarding();
+        app.UseAuthentication();
 
         app.UseIdentityServer();
         app.UseAuthorization();
@@ -186,11 +184,9 @@ internal static class HostingExtensions
         app.MapRazorPages()
             .RequireAuthorization();
 
-        /*
         app.UseEndpoints(
             endpoints =>
             endpoints.MapDefaultControllerRoute());
-        */
 
         return app;
     }

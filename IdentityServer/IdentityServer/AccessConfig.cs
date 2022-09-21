@@ -30,7 +30,7 @@ public static class AccessConfig
                 ClientId = "spa_pkce",
                 ClientName = "SPA PKCE Client",
 
-                ClientUri = $"{configuration["SpaUrl"]}",
+                ClientUri = $"{configuration["GlobalUrl"]}",
 
                 AllowedGrantTypes = GrantTypes.Code,
 
