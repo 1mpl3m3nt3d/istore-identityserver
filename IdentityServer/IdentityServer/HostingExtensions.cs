@@ -139,26 +139,6 @@ internal static class HostingExtensions
             app.UseHttpsRedirection();
         }
 
-        app.UseStaticFiles();
-
-        app.UseCookiePolicy(
-            new CookiePolicyOptions
-            {
-                HttpOnly = Microsoft.AspNetCore.CookiePolicy.HttpOnlyPolicy.None,
-                MinimumSameSitePolicy = SameSiteMode.Unspecified,
-                Secure = CookieSecurePolicy.SameAsRequest,
-            });
-
-        app.UseRouting();
-
-        // ref: https://docs.microsoft.com/en-us/aspnet/core/fundamentals/middleware/?view=aspnetcore-6.0#middleware-order
-        // ref: https://docs.microsoft.com/en-us/aspnet/core/host-and-deploy/proxy-load-balancer?view=aspnetcore-6.0
-        // ref: https://github.com/aspnet/Docs/issues/2384
-        // ref: https://github.com/IdentityServer/IdentityServer4/issues/1331
-        // ref: https://github.com/IdentityServer/IdentityServer4/issues/4535
-        // ref: https://stackoverflow.com/questions/69048286/non-https-url-in-identity-server-4-discovery-document
-        // ref: https://identityserver4.readthedocs.io/en/latest/topics/mtls.html?highlight=proxy#asp-net-core-setup
-
         app.Use(async (ctx, next) =>
         {
             var identityUri = new Uri(app.Configuration["IdentityUrl"]);
@@ -197,15 +177,27 @@ internal static class HostingExtensions
             await next(ctx);
         });
 
+        app.UseStaticFiles();
+
+        app.UseCookiePolicy(
+            new CookiePolicyOptions
+            {
+                HttpOnly = Microsoft.AspNetCore.CookiePolicy.HttpOnlyPolicy.None,
+                MinimumSameSitePolicy = SameSiteMode.Unspecified,
+                Secure = CookieSecurePolicy.SameAsRequest,
+            });
+
+        app.UseRouting();
+
         //app.UseRequestLocalization();
 
         app.UseCors("CorsPolicy");
 
-        app.UseCertificateForwarding();
+        //app.UseCertificateForwarding();
 
         app.UseIdentityServer();
 
-        app.UseAuthentication();
+        //app.UseAuthentication();
         app.UseAuthorization();
 
         //app.UseSession();
