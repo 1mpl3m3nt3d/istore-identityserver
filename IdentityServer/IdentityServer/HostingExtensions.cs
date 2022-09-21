@@ -19,7 +19,8 @@ internal static class HostingExtensions
 
         builder.Services.Configure<ForwardedHeadersOptions>(options =>
         {
-            options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+            options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedHost | ForwardedHeaders.XForwardedProto;
+            options.RequireHeaderSymmetry = false;
         });
 
         builder.Services.AddCors(
@@ -87,6 +88,8 @@ internal static class HostingExtensions
     [Obsolete]
     public static WebApplication ConfigurePipeline(this WebApplication app)
     {
+        app.UseSerilogRequestLogging();
+
         // ref: https://docs.microsoft.com/en-us/aspnet/core/fundamentals/middleware/?view=aspnetcore-6.0#middleware-order
         // ref: https://docs.microsoft.com/en-us/aspnet/core/host-and-deploy/proxy-load-balancer?view=aspnetcore-6.0
         // ref: https://github.com/aspnet/Docs/issues/2384
@@ -95,47 +98,55 @@ internal static class HostingExtensions
         // ref: https://stackoverflow.com/questions/69048286/non-https-url-in-identity-server-4-discovery-document
         // ref: https://identityserver4.readthedocs.io/en/latest/topics/mtls.html?highlight=proxy#asp-net-core-setup
 
-        app.UseCertificateForwarding();
-
         app.Use(async (ctx, next) =>
         {
             var identityUri = new Uri(app.Configuration["IdentityUrl"]);
+            //var identityUrl = $"{identityUri.Scheme}://{identityUri.Host}{(identityUri.IsDefaultPort ? string.Empty : $":{identityUri.Port}")}";
 
-            //var identityUrl = $"{identityUri.Scheme}://{identityUri.Host}:{identityUri.Port}";
+            Console.WriteLine($"\nUpgrading Origin to {identityUri.OriginalString}\n");
+            //Console.WriteLine($"\nUpgrading Origin to {identityUrl}\n");
 
             if (identityUri is not null)
             {
-                ctx.Request.Scheme = identityUri.Scheme;
+                /*
+                var contextUrls = ctx.RequestServices.GetService<IServerUrls>();
+
+                if (contextUrls is not null)
+                {
+                    contextUrls.Origin = identityUrl;
+                }
+
+                var requestUrls = ctx.Request.HttpContext.RequestServices.GetService<IServerUrls>();
+
+                if (requestUrls is not null)
+                {
+                    requestUrls.Origin = identityUrl;
+                }
+
+                var responseUrls = ctx.Response.HttpContext.RequestServices.GetService<IServerUrls>();
+
+                if (responseUrls is not null)
+                {
+                    responseUrls.Origin = identityUrl;
+                }
+                */
+
+                if (app.Environment.IsProduction())
+                {
+                    ctx.Request.Scheme = "https";
+                }
+                else
+                {
+                    ctx.Request.Scheme = identityUri.Scheme;
+                }
+
                 //ctx.Request.Host = new HostString(identityUri.Host);
-
-                //var contextUrls = ctx.RequestServices.GetService<IServerUrls>();
-
-                //if (contextUrls is not null)
-                //{
-                //    contextUrls.Origin = identityUrl;
-                //}
-
-                //var requestUrls = ctx.Request.HttpContext.RequestServices.GetService<IServerUrls>();
-
-                //if (requestUrls is not null)
-                //{
-                //   requestUrls.Origin = identityUrl;
-                //}
-
-                //var responseUrls = ctx.Response.HttpContext.RequestServices.GetService<IServerUrls>();
-
-                //if (responseUrls is not null)
-                //{
-                //    responseUrls.Origin = identityUrl;
-                //}
-
-                //ctx.SetIdentityServerOrigin(identityUrl);
             }
 
             await next(ctx);
         });
 
-        app.UseSerilogRequestLogging();
+        app.UseCertificateForwarding();
 
         if (app.Environment.IsDevelopment())
         {
@@ -147,8 +158,8 @@ internal static class HostingExtensions
             app.UseExceptionHandler("/Error");
             app.UseForwardedHeaders();
             // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
-            app.UseHsts();
-            app.UseHttpsRedirection();
+            //app.UseHsts();
+            //app.UseHttpsRedirection();
         }
 
         app.UseStaticFiles();
