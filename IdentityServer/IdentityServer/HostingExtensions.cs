@@ -28,6 +28,13 @@ internal static class HostingExtensions
             options.RequireHeaderSymmetry = false;
         });
 
+        builder.Services.AddCookiePolicy(options =>
+        {
+            options.HttpOnly = Microsoft.AspNetCore.CookiePolicy.HttpOnlyPolicy.None;
+            options.MinimumSameSitePolicy = SameSiteMode.Unspecified;
+            options.Secure = CookieSecurePolicy.SameAsRequest;
+        });
+
         builder.Services.AddCors(
             options => options
             .AddPolicy(
@@ -126,6 +133,19 @@ internal static class HostingExtensions
 
     public static WebApplication ConfigurePipeline(this WebApplication app)
     {
+        app.UseSerilogRequestLogging();
+
+        if (app.Environment.IsDevelopment())
+        {
+            app.UseDeveloperExceptionPage();
+        }
+        else
+        {
+            app.UseExceptionHandler("/Error");
+        }
+
+        app.UseForwardedHeaders();
+
         app.Use(async (ctx, next) =>
         {
             var identityUri = new Uri(app.Configuration["IdentityUrl"]);
@@ -155,24 +175,11 @@ internal static class HostingExtensions
                 }
 
                 ctx.Request.Scheme = identityUri.Scheme;
-                ctx.Request.Host = new HostString(identityUri.Host);
+                ctx.Request.Host = new HostString($"{identityUri.Host}{(identityUri.IsDefaultPort ? string.Empty : $":{identityUri.Port}")}");
             }
 
             await next(ctx);
         });
-
-        app.UseSerilogRequestLogging();
-
-        if (app.Environment.IsDevelopment())
-        {
-            app.UseDeveloperExceptionPage();
-        }
-        else
-        {
-            app.UseExceptionHandler("/Error");
-        }
-
-        app.UseForwardedHeaders();
 
         if (app.Configuration["Nginx:UseNginx"] != "true")
         {
@@ -185,13 +192,7 @@ internal static class HostingExtensions
 
         app.UseStaticFiles();
 
-        app.UseCookiePolicy(
-            new CookiePolicyOptions
-            {
-                HttpOnly = Microsoft.AspNetCore.CookiePolicy.HttpOnlyPolicy.None,
-                MinimumSameSitePolicy = SameSiteMode.Unspecified,
-                Secure = CookieSecurePolicy.SameAsRequest,
-            });
+        app.UseCookiePolicy();
 
         app.UseRouting();
 
@@ -199,8 +200,8 @@ internal static class HostingExtensions
 
         app.UseCors("CorsPolicy");
 
-        //app.UseCertificateForwarding();
-        //app.UseAuthentication();
+        app.UseCertificateForwarding();
+        app.UseAuthentication();
 
         app.UseIdentityServer();
         app.UseAuthorization();
@@ -212,11 +213,9 @@ internal static class HostingExtensions
         app.MapRazorPages()
             .RequireAuthorization();
 
-        /*
         app.UseEndpoints(
             endpoints =>
             endpoints.MapDefaultControllerRoute());
-        */
 
         return app;
     }
