@@ -1,12 +1,8 @@
-using System.Net;
-
-using Duende.IdentityServer.Services;
+using Duende.IdentityServer.Extensions;
 
 using IdentityServerHost;
 
 using Microsoft.AspNetCore.HttpOverrides;
-
-using Serilog;
 
 namespace IdentityServer;
 
@@ -28,12 +24,14 @@ internal static class HostingExtensions
             options.RequireHeaderSymmetry = false;
         });
 
+        /*
         builder.Services.AddCookiePolicy(options =>
         {
             options.HttpOnly = Microsoft.AspNetCore.CookiePolicy.HttpOnlyPolicy.None;
             options.MinimumSameSitePolicy = SameSiteMode.Unspecified;
             options.Secure = CookieSecurePolicy.SameAsRequest;
         });
+        */
 
         builder.Services.AddCors(
             options => options
@@ -46,6 +44,7 @@ internal static class HostingExtensions
                 .AllowAnyMethod()
                 .AllowCredentials()));
 
+        /*
         if (!builder.Environment.IsDevelopment() && builder.Configuration["Nginx:UseNginx"] != "true")
         {
             builder.Services.AddHsts(options =>
@@ -67,19 +66,20 @@ internal static class HostingExtensions
                 }
             });
         }
+        */
 
         var isBuilder = builder.Services.AddIdentityServer(options =>
             {
-                options.Authentication.CookieLifetime = TimeSpan.FromDays(30);
-                options.Authentication.CookieSameSiteMode = SameSiteMode.Unspecified;
-                options.Authentication.CookieSlidingExpiration = true;
+                //options.Authentication.CookieLifetime = TimeSpan.FromDays(30);
+                //options.Authentication.CookieSameSiteMode = SameSiteMode.Unspecified;
+                //options.Authentication.CookieSlidingExpiration = true;
 
-                options.Cors.CorsPolicyName = "CorsPolicy";
+                //options.Cors.CorsPolicyName = "CorsPolicy";
 
-                options.IssuerUri = builder.Configuration["IdentityUrl"];
+                //options.IssuerUri = builder.Configuration["IdentityUrl"];
 
-                options.StrictJarValidation = false;
-                options.ValidateTenantOnAuthorization = false;
+                //options.StrictJarValidation = false;
+                //options.ValidateTenantOnAuthorization = false;
 
                 options.Events.RaiseErrorEvents = true;
                 options.Events.RaiseFailureEvents = true;
@@ -108,6 +108,7 @@ internal static class HostingExtensions
         //builder.Services.Configure<RazorPagesOptions>(options =>
         //    options.Conventions.AuthorizeFolder("/ServerSideSessions", "admin"));
 
+        /*
         builder.Services.AddAuthentication();
         /*
         .AddGoogle(options =>
@@ -122,35 +123,28 @@ internal static class HostingExtensions
         });
         */
 
+        /*
         builder.Services.ConfigureApplicationCookie(
             options =>
             {
                 options.ExpireTimeSpan = TimeSpan.FromDays(30);
                 options.SlidingExpiration = true;
             });
+        */
 
-        builder.ConfigureNginx();
+        //builder.ConfigureNginx();
 
         return builder.Build();
     }
 
+    [Obsolete]
     public static WebApplication ConfigurePipeline(this WebApplication app)
     {
-        app.UseSerilogRequestLogging();
-
-        if (app.Environment.IsDevelopment())
-        {
-            app.UseDeveloperExceptionPage();
-        }
-        else
-        {
-            app.UseExceptionHandler("/Error");
-        }
-
-        app.UseForwardedHeaders();
+        //app.UseSerilogRequestLogging();
 
         app.Use(async (ctx, next) =>
         {
+            /*
             var identityUri = new Uri(app.Configuration["IdentityUrl"]);
             var identityUrl = $"{identityUri.Scheme}://{identityUri.Host}{(identityUri.IsDefaultPort ? string.Empty : $":{identityUri.Port}")}";
 
@@ -180,9 +174,25 @@ internal static class HostingExtensions
                 ctx.Request.Scheme = identityUri.Scheme;
                 ctx.Request.Host = new HostString($"{identityUri.Host}{(identityUri.IsDefaultPort ? string.Empty : $":{identityUri.Port}")}");
             }
+            */
+
+            ctx.SetIdentityServerOrigin(app.Configuration["IdentityUrl"]);
 
             await next(ctx);
         });
+
+        app.UseForwardedHeaders();
+
+        if (app.Environment.IsDevelopment())
+        {
+            app.UseDeveloperExceptionPage();
+        }
+        else
+        {
+            app.UseExceptionHandler("/Error");
+            app.UseHsts();
+            app.UseHttpsRedirection();
+        }
 
         /*
         if (app.Configuration["Nginx:UseNginx"] != "true")
@@ -192,9 +202,6 @@ internal static class HostingExtensions
             app.UseHttpsRedirection();
         }
         */
-
-        app.UseHsts();
-        app.UseHttpsRedirection();
 
         //app.UseDefaultFiles();
 
@@ -212,20 +219,20 @@ internal static class HostingExtensions
         //app.UseAuthentication();
 
         app.UseIdentityServer();
+
+        //app.UseAuthentication();
         app.UseAuthorization();
 
         //app.UseSession();
         //app.UseResponseCompression();
         //app.UseResponseCaching();
 
-        app.MapRazorPages()
-            .RequireAuthorization();
+        app.MapRazorPages();
+        //.RequireAuthorization();
 
-        /*
         app.UseEndpoints(
             endpoints =>
             endpoints.MapDefaultControllerRoute());
-        */
 
         return app;
     }
