@@ -14,11 +14,11 @@ public static class AccessConfig
     public static IEnumerable<ApiScope> ApiScopes =>
         new ApiScope[]
         {
-                new ApiScope("spa", "SPA"),
-                new ApiScope("catalog", "Catalog"),
-                new ApiScope("catalog.bff", "Catalog BFF"),
-                new ApiScope("basket", "Basket"),
-                new ApiScope("basket.bff", "Basket Bff"),
+            new ApiScope("basket", "Basket"),
+            new ApiScope("basket.bff", "Basket Bff"),
+            new ApiScope("catalog", "Catalog"),
+            new ApiScope("catalog.bff", "Catalog BFF"),
+            new ApiScope("spa", "SPA"),
         };
 
     public static IEnumerable<Client> Clients(IConfiguration configuration)
@@ -29,73 +29,81 @@ public static class AccessConfig
             {
                 ClientId = "spa_pkce",
                 ClientName = "SPA PKCE Client",
-
+                ClientSecrets = { new Secret("secret".Sha256()) },
                 ClientUri = $"{configuration["GlobalUrl"]}",
 
+                AllowedCorsOrigins = { configuration["GlobalUrl"], configuration["IdentityUrl"], configuration["SpaUrl"] },
                 AllowedGrantTypes = GrantTypes.Code,
-
-                ClientSecrets = { new Secret("secret".Sha256()) },
+                AllowedScopes = { "openid", "profile", "spa" },
 
                 RedirectUris =
                 {
                     $"{configuration["GlobalUrl"]}/signin-oidc",
-                    $"{configuration["GlobalUrl"]}/silentrenew",
+                    $"{configuration["GlobalUrl"]}/signin/callback",
                     $"{configuration["GlobalUrl"]}/signout-oidc",
+                    $"{configuration["GlobalUrl"]}/signout/callback",
+                    $"{configuration["GlobalUrl"]}/silentrenew",
+                    $"{configuration["GlobalUrl"]}/login/callback",
                     $"{configuration["GlobalUrl"]}/logout/callback",
                     $"{configuration["SpaUrl"]}/signin-oidc",
-                    $"{configuration["SpaUrl"]}/silentrenew",
+                    $"{configuration["SpaUrl"]}/signin/callback",
                     $"{configuration["SpaUrl"]}/signout-oidc",
+                    $"{configuration["SpaUrl"]}/signout/callback",
+                    $"{configuration["SpaUrl"]}/silentrenew",
+                    $"{configuration["SpaUrl"]}/login/callback",
                     $"{configuration["SpaUrl"]}/logout/callback",
                 },
 
                 PostLogoutRedirectUris =
                 {
+                    $"{configuration["GlobalUrl"]}",
                     $"{configuration["GlobalUrl"]}/logout/callback",
+                    $"{configuration["GlobalUrl"]}/signout/callback",
+                    $"{configuration["GlobalUrl"]}/signout-oidc",
+                    $"{configuration["SpaUrl"]}",
                     $"{configuration["SpaUrl"]}/logout/callback",
+                    $"{configuration["SpaUrl"]}/signout/callback",
+                    $"{configuration["SpaUrl"]}/signout-oidc",
                 },
 
-                AllowedCorsOrigins = { configuration["GlobalUrl"], configuration["IdentityUrl"], configuration["SpaUrl"] },
-
-                RequirePkce = true,
+                AllowAccessTokensViaBrowser = true,
+                RequireClientSecret = true,
                 RequireConsent = false,
+                RequirePkce = true,
 
-                AllowAccessTokensViaBrowser = true,
-
-                AllowedScopes = { "openid", "profile", "spa" },
-            },
-            new Client
-            {
-                ClientId = "catalogswaggerui",
-                ClientName = "Catalog Swagger UI",
-
-                AllowedGrantTypes = GrantTypes.Implicit,
-
-                AllowAccessTokensViaBrowser = true,
-
-                RedirectUris = { $"{configuration["CatalogApi"]}/swagger/oauth2-redirect.html" },
-
-                PostLogoutRedirectUris = { $"{configuration["CatalogApi"]}/swagger/" },
-
-                AllowedCorsOrigins = { configuration["CatalogApi"], configuration["GlobalUrl"], configuration["IdentityUrl"] },
-
-                AllowedScopes = { "catalog", "catalog.bff", "openid", "profile", "spa" },
+                IdentityTokenLifetime = 300,
+                RefreshTokenExpiration = TokenExpiration.Sliding,
+                SlidingRefreshTokenLifetime = 1296000,
             },
             new Client
             {
                 ClientId = "basketswaggerui",
                 ClientName = "Basket Swagger UI",
-
-                AllowedGrantTypes = GrantTypes.Implicit,
-
-                AllowAccessTokensViaBrowser = true,
-
-                RedirectUris = { $"{configuration["BasketApi"]}/swagger/oauth2-redirect.html" },
-
-                PostLogoutRedirectUris = { $"{configuration["BasketApi"]}/swagger/" },
+                ClientUri = $"{configuration["BasketApi"]}",
 
                 AllowedCorsOrigins = { configuration["BasketApi"], configuration["GlobalUrl"], configuration["IdentityUrl"] },
-
+                AllowedGrantTypes = GrantTypes.Implicit,
                 AllowedScopes = { "basket", "basket.bff", "openid", "profile", "spa" },
+
+                RedirectUris = { $"{configuration["BasketApi"]}/swagger/oauth2-redirect.html" },
+                PostLogoutRedirectUris = { $"{configuration["BasketApi"]}/swagger/" },
+
+                AllowAccessTokensViaBrowser = true,
+            },
+            new Client
+            {
+                ClientId = "catalogswaggerui",
+                ClientName = "Catalog Swagger UI",
+                ClientUri = $"{configuration["CatalogApi"]}",
+
+                AllowedCorsOrigins = { configuration["CatalogApi"], configuration["GlobalUrl"], configuration["IdentityUrl"] },
+                AllowedGrantTypes = GrantTypes.Implicit,
+                AllowedScopes = { "catalog", "catalog.bff", "openid", "profile", "spa" },
+
+                RedirectUris = { $"{configuration["CatalogApi"]}/swagger/oauth2-redirect.html" },
+                PostLogoutRedirectUris = { $"{configuration["CatalogApi"]}/swagger/" },
+
+                AllowAccessTokensViaBrowser = true,
             },
         };
     }
