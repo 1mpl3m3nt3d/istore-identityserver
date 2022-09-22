@@ -50,9 +50,9 @@ internal static class HostingExtensions
         {
             builder.Services.AddHsts(options =>
             {
-                options.Preload = true;
                 options.IncludeSubDomains = true;
                 options.MaxAge = TimeSpan.FromDays(60);
+                options.Preload = true;
             });
 
             var isPortParsed = int.TryParse(builder.Configuration["HTTPS_PORT"], out var httpsPort);
@@ -70,17 +70,20 @@ internal static class HostingExtensions
 
         var isBuilder = builder.Services.AddIdentityServer(options =>
             {
+                options.Authentication.CookieLifetime = TimeSpan.FromDays(30);
                 options.Authentication.CookieSameSiteMode = SameSiteMode.Unspecified;
                 options.Authentication.CookieSlidingExpiration = true;
-                options.Authentication.CookieLifetime = TimeSpan.FromDays(30);
 
                 options.Cors.CorsPolicyName = "CorsPolicy";
 
                 options.IssuerUri = builder.Configuration["IdentityUrl"];
 
+                options.StrictJarValidation = false;
+                options.ValidateTenantOnAuthorization = false;
+
                 options.Events.RaiseErrorEvents = true;
-                options.Events.RaiseInformationEvents = true;
                 options.Events.RaiseFailureEvents = true;
+                options.Events.RaiseInformationEvents = true;
                 options.Events.RaiseSuccessEvents = true;
 
                 // see https://docs.duendesoftware.com/identityserver/v6/fundamentals/resources/
