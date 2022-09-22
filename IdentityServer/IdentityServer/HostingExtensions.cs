@@ -184,17 +184,12 @@ internal static class HostingExtensions
             await next(ctx);
         });
 
-        /*
         if (app.Configuration["Nginx:UseNginx"] != "true")
         {
             // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
             app.UseHsts();
             app.UseHttpsRedirection();
         }
-        */
-
-        app.UseHsts();
-        app.UseHttpsRedirection();
 
         //app.UseDefaultFiles();
 
@@ -208,8 +203,8 @@ internal static class HostingExtensions
 
         app.UseCors("CorsPolicy");
 
-        //app.UseCertificateForwarding();
-        //app.UseAuthentication();
+        app.UseCertificateForwarding();
+        app.UseAuthentication();
 
         app.UseIdentityServer();
         app.UseAuthorization();
@@ -221,11 +216,9 @@ internal static class HostingExtensions
         app.MapRazorPages()
             .RequireAuthorization();
 
-        /*
         app.UseEndpoints(
             endpoints =>
             endpoints.MapDefaultControllerRoute());
-        */
 
         return app;
     }
