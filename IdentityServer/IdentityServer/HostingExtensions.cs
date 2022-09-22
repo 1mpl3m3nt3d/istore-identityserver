@@ -124,6 +124,41 @@ internal static class HostingExtensions
 
     public static WebApplication ConfigurePipeline(this WebApplication app)
     {
+        app.Use(async (ctx, next) =>
+        {
+            var identityUri = new Uri(app.Configuration["IdentityUrl"]);
+            var identityUrl = $"{identityUri.Scheme}://{identityUri.Host}{(identityUri.IsDefaultPort ? string.Empty : $":{identityUri.Port}")}";
+
+            if (identityUri is not null && identityUrl is not null)
+            {
+                var contextUrls = ctx.RequestServices.GetService<IServerUrls>();
+
+                if (contextUrls is not null)
+                {
+                    contextUrls.Origin = identityUrl;
+                }
+
+                var requestUrls = ctx.Request.HttpContext.RequestServices.GetService<IServerUrls>();
+
+                if (requestUrls is not null)
+                {
+                    requestUrls.Origin = identityUrl;
+                }
+
+                var responseUrls = ctx.Response.HttpContext.RequestServices.GetService<IServerUrls>();
+
+                if (responseUrls is not null)
+                {
+                    responseUrls.Origin = identityUrl;
+                }
+
+                ctx.Request.Scheme = identityUri.Scheme;
+                ctx.Request.Host = new HostString(identityUri.Host);
+            }
+
+            await next(ctx);
+        });
+
         app.UseSerilogRequestLogging();
 
         if (app.Environment.IsDevelopment())
@@ -144,26 +179,7 @@ internal static class HostingExtensions
             app.UseHttpsRedirection();
         }
 
-        app.Use(async (ctx, next) =>
-        {
-            var identityUri = new Uri(app.Configuration["IdentityUrl"]);
-            var identityUrl = $"{identityUri.Scheme}://{identityUri.Host}{(identityUri.IsDefaultPort ? string.Empty : $":{identityUri.Port}")}";
-
-            if (identityUri is not null && identityUrl is not null)
-            {
-                var contextUrls = ctx.RequestServices.GetService<IServerUrls>();
-
-                if (contextUrls is not null)
-                {
-                    contextUrls.Origin = identityUrl;
-                }
-
-                //ctx.Request.Scheme = identityUri.Scheme;
-                //ctx.Request.Host = new HostString(identityUri.Host);
-            }
-
-            await next(ctx);
-        });
+        //app.UseDefaultFiles();
 
         app.UseStaticFiles();
 
@@ -181,8 +197,8 @@ internal static class HostingExtensions
 
         app.UseCors("CorsPolicy");
 
-        app.UseCertificateForwarding();
-        app.UseAuthentication();
+        //app.UseCertificateForwarding();
+        //app.UseAuthentication();
 
         app.UseIdentityServer();
         app.UseAuthorization();
@@ -194,9 +210,11 @@ internal static class HostingExtensions
         app.MapRazorPages()
             .RequireAuthorization();
 
+        /*
         app.UseEndpoints(
             endpoints =>
             endpoints.MapDefaultControllerRoute());
+        */
 
         return app;
     }
