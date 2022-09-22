@@ -28,7 +28,7 @@ public static class AccessConfig
             new Client
             {
                 ClientId = "spa_pkce",
-                ClientName = "SPA PKCE Client",
+                ClientName = "iStore",
                 ClientSecrets = { new Secret("secret".Sha256()) },
                 ClientUri = $"{configuration["GlobalUrl"]}",
 
@@ -66,14 +66,27 @@ public static class AccessConfig
                     $"{configuration["SpaUrl"]}/signout-oidc",
                 },
 
+                AbsoluteRefreshTokenLifetime = 2592000,
+                AccessTokenLifetime = 3600,
+                AccessTokenType = AccessTokenType.Jwt,
                 AllowAccessTokensViaBrowser = true,
+                AllowPlainTextPkce = false,
+                AllowRememberConsent = true,
+                AlwaysIncludeUserClaimsInIdToken = true,
+                AuthorizationCodeLifetime = 300,
+                AlwaysSendClientClaims = true,
+                ConsentLifetime = null,
+                EnableLocalLogin = true,
+                IdentityTokenLifetime = 300,
+                IncludeJwtId = true,
+                RefreshTokenExpiration = TokenExpiration.Sliding,
+                RefreshTokenUsage = TokenUsage.ReUse,
                 RequireClientSecret = true,
                 RequireConsent = false,
                 RequirePkce = true,
-
-                IdentityTokenLifetime = 300,
-                RefreshTokenExpiration = TokenExpiration.Sliding,
+                RequireRequestObject = false,
                 SlidingRefreshTokenLifetime = 1296000,
+                UpdateAccessTokenClaimsOnRefresh = false,
             },
             new Client
             {
