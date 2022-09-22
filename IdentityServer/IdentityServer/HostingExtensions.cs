@@ -69,6 +69,8 @@ internal static class HostingExtensions
 
                 options.Cors.CorsPolicyName = "CorsPolicy";
 
+                options.IssuerUri = builder.Configuration["IdentityUrl"];
+
                 options.Events.RaiseErrorEvents = true;
                 options.Events.RaiseInformationEvents = true;
                 options.Events.RaiseFailureEvents = true;
