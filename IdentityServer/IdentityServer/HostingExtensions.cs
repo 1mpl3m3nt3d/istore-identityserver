@@ -1,10 +1,9 @@
 using System.Net;
 
-using Duende.IdentityServer.Services;
-
 using IdentityServerHost;
 
 using Microsoft.AspNetCore.HttpLogging;
+using Microsoft.AspNetCore.HttpOverrides;
 
 using Serilog;
 
@@ -23,14 +22,12 @@ internal static class HostingExtensions
             builder.Services.Configure<AppSettings>(configuration);
         }
 
-        /*
         builder.Services.Configure<ForwardedHeadersOptions>(options =>
         {
             options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedHost | ForwardedHeaders.XForwardedProto;
             options.ForwardLimit = 2;
             options.RequireHeaderSymmetry = false;
         });
-        */
 
         builder.Services.Configure<CookiePolicyOptions>(options =>
         {
@@ -144,7 +141,10 @@ internal static class HostingExtensions
         //builder.Services.Configure<RazorPagesOptions>(options =>
         //    options.Conventions.AuthorizeFolder("/ServerSideSessions", "admin"));
 
-        builder.Services.AddAuthentication();
+        builder.Services.AddAuthentication(options =>
+        {
+            options.RequireAuthenticatedSignIn = false;
+        });
         /*
         .AddGoogle(options =>
         {
@@ -196,6 +196,9 @@ internal static class HostingExtensions
 
     public static WebApplication ConfigurePipeline(this WebApplication app)
     {
+        app.UseSerilogRequestLogging();
+
+        /*
         app.Use(async (ctx, next) =>
         {
             var identityUri = new Uri(app.Configuration["IdentityUrl"]);
@@ -230,10 +233,8 @@ internal static class HostingExtensions
 
             await next(ctx);
         });
+        */
 
-        app.UseSerilogRequestLogging();
-
-        /*
         var forwardedHeadersOptions = new ForwardedHeadersOptions()
         {
             ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedHost | ForwardedHeaders.XForwardedProto,
@@ -243,11 +244,10 @@ internal static class HostingExtensions
 
         forwardedHeadersOptions.KnownNetworks.Clear();
         forwardedHeadersOptions.KnownProxies.Clear();
-        */
 
-        //app.UseForwardedHeaders(forwardedHeadersOptions);
+        app.UseForwardedHeaders(forwardedHeadersOptions);
 
-        //app.UseCertificateForwarding();
+        app.UseCertificateForwarding();
 
         if (app.Environment.IsDevelopment())
         {
@@ -301,6 +301,7 @@ internal static class HostingExtensions
 
         app.UseIdentityServer();
         app.UseAuthorization();
+
         //app.UseAuthentication();
 
         //app.UseSession();
