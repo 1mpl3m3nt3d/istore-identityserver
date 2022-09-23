@@ -5,7 +5,6 @@ using Duende.IdentityServer.Services;
 using IdentityServerHost;
 
 using Microsoft.AspNetCore.HttpLogging;
-using Microsoft.AspNetCore.HttpOverrides;
 
 using Serilog;
 
@@ -24,12 +23,14 @@ internal static class HostingExtensions
             builder.Services.Configure<AppSettings>(configuration);
         }
 
+        /*
         builder.Services.Configure<ForwardedHeadersOptions>(options =>
         {
             options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedHost | ForwardedHeaders.XForwardedProto;
             options.ForwardLimit = 2;
             options.RequireHeaderSymmetry = false;
         });
+        */
 
         builder.Services.Configure<CookiePolicyOptions>(options =>
         {
@@ -170,6 +171,7 @@ internal static class HostingExtensions
             options.RequestHeaders.Add("Sec-Fetch-Dest");
             options.RequestHeaders.Add("Sec-Fetch-Mode");
             options.RequestHeaders.Add("Sec-Fetch-Site");
+            options.RequestHeaders.Add("Sec-Fetch-User");
             options.RequestHeaders.Add("Sec-Gpc");
             options.RequestHeaders.Add("X-Request-Id");
             options.RequestHeaders.Add("X-Forwarded-For");
@@ -198,6 +200,7 @@ internal static class HostingExtensions
 
         app.UseCertificateForwarding();
 
+        /*
         var forwardedHeadersOptions = new ForwardedHeadersOptions()
         {
             ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedHost | ForwardedHeaders.XForwardedProto,
@@ -207,8 +210,9 @@ internal static class HostingExtensions
 
         forwardedHeadersOptions.KnownNetworks.Clear();
         forwardedHeadersOptions.KnownProxies.Clear();
+        */
 
-        app.UseForwardedHeaders(forwardedHeadersOptions);
+        //app.UseForwardedHeaders(forwardedHeadersOptions);
 
         if (app.Environment.IsDevelopment())
         {
@@ -297,7 +301,7 @@ internal static class HostingExtensions
 
         app.UseIdentityServer();
         app.UseAuthorization();
-        app.UseAuthentication();
+        //app.UseAuthentication();
 
         //app.UseSession();
         //app.UseResponseCompression();
@@ -342,7 +346,11 @@ internal static class HostingExtensions
                 {
                     var unixSocket = builder.Configuration["Nginx:UnixSocketPath"] ?? "/tmp/nginx.socket";
 
-                    builder.WebHost.ConfigureKestrel(kestrel => kestrel.ListenUnixSocket(unixSocket));
+                    builder.WebHost.ConfigureKestrel(kestrel =>
+                    {
+                        kestrel.ListenUnixSocket(unixSocket);
+                        kestrel.AllowAlternateSchemes = true;
+                    });
                 }
 
                 if (builder.Configuration["Nginx:UsePort"] == "true")
@@ -351,7 +359,11 @@ internal static class HostingExtensions
 
                     if (portParsed)
                     {
-                        builder.WebHost.ConfigureKestrel(kestrel => kestrel.ListenAnyIP(port));
+                        builder.WebHost.ConfigureKestrel(kestrel =>
+                        {
+                            kestrel.ListenAnyIP(port);
+                            kestrel.AllowAlternateSchemes = true;
+                        });
                     }
                 }
             }
@@ -372,7 +384,11 @@ internal static class HostingExtensions
 
                     if (portParsed)
                     {
-                        builder.WebHost.ConfigureKestrel(kestrel => kestrel.ListenAnyIP(port));
+                        builder.WebHost.ConfigureKestrel(kestrel =>
+                        {
+                            kestrel.ListenAnyIP(port);
+                            kestrel.AllowAlternateSchemes = true;
+                        });
                     }
                 }
                 else
@@ -380,7 +396,11 @@ internal static class HostingExtensions
                     var identityUrl = builder.Configuration["IdentityUrl"];
                     var identityPort = new Uri(identityUrl).Port;
 
-                    builder.WebHost.ConfigureKestrel(kestrel => kestrel.ListenAnyIP(identityPort));
+                    builder.WebHost.ConfigureKestrel(kestrel =>
+                    {
+                        kestrel.ListenAnyIP(identityPort);
+                        kestrel.AllowAlternateSchemes = true;
+                    });
                 }
             }
             catch (Exception ex)
