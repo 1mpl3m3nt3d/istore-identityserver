@@ -28,10 +28,32 @@ internal static class HostingExtensions
             options.RequireHeaderSymmetry = false;
         });
 
+        builder.Services.ConfigureApplicationCookie(
+            options =>
+            {
+                options.Cookie.HttpOnly = false;
+                options.Cookie.Expiration = TimeSpan.FromDays(30);
+                options.Cookie.SameSite = SameSiteMode.Unspecified;
+                options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
+                options.ExpireTimeSpan = TimeSpan.FromDays(30);
+                options.SlidingExpiration = true;
+            });
+
+        builder.Services.ConfigureExternalCookie(
+            options =>
+            {
+                options.Cookie.HttpOnly = false;
+                options.Cookie.Expiration = TimeSpan.FromDays(30);
+                options.Cookie.SameSite = SameSiteMode.Unspecified;
+                options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
+                options.ExpireTimeSpan = TimeSpan.FromDays(30);
+                options.SlidingExpiration = true;
+            });
+
         builder.Services.AddCookiePolicy(options =>
         {
             options.HttpOnly = Microsoft.AspNetCore.CookiePolicy.HttpOnlyPolicy.None;
-            options.MinimumSameSitePolicy = SameSiteMode.None;
+            options.MinimumSameSitePolicy = SameSiteMode.Unspecified;
             options.Secure = CookieSecurePolicy.SameAsRequest;
         });
 
@@ -46,27 +68,27 @@ internal static class HostingExtensions
                 .AllowAnyMethod()
                 .AllowCredentials()));
 
-        if (!builder.Environment.IsDevelopment() && builder.Configuration["Nginx:UseNginx"] != "true")
+        //if (!builder.Environment.IsDevelopment() && builder.Configuration["Nginx:UseNginx"] != "true")
+        //{
+        builder.Services.AddHsts(options =>
         {
-            builder.Services.AddHsts(options =>
+            options.IncludeSubDomains = true;
+            options.MaxAge = TimeSpan.FromDays(60);
+            options.Preload = true;
+        });
+
+        var isPortParsed = int.TryParse(builder.Configuration["HTTPS_PORT"], out var httpsPort);
+
+        builder.Services.AddHttpsRedirection(options =>
+        {
+            options.RedirectStatusCode = (int)HttpStatusCode.TemporaryRedirect;
+
+            if (isPortParsed)
             {
-                options.IncludeSubDomains = true;
-                options.MaxAge = TimeSpan.FromDays(60);
-                options.Preload = true;
-            });
-
-            var isPortParsed = int.TryParse(builder.Configuration["HTTPS_PORT"], out var httpsPort);
-
-            builder.Services.AddHttpsRedirection(options =>
-            {
-                options.RedirectStatusCode = (int)HttpStatusCode.TemporaryRedirect;
-
-                if (isPortParsed)
-                {
-                    options.HttpsPort = httpsPort;
-                }
-            });
-        }
+                options.HttpsPort = httpsPort;
+            }
+        });
+        //}
 
         var isBuilder = builder.Services.AddIdentityServer(options =>
             {
@@ -75,6 +97,9 @@ internal static class HostingExtensions
                 options.Authentication.CookieSlidingExpiration = true;
 
                 options.Cors.CorsPolicyName = "CorsPolicy";
+
+                options.Csp.AddDeprecatedHeader = true;
+                options.Csp.Level = Duende.IdentityServer.Models.CspLevel.One;
 
                 options.IssuerUri = builder.Configuration["IdentityUrl"];
 
@@ -124,27 +149,6 @@ internal static class HostingExtensions
         });
         */
 
-        builder.Services.ConfigureApplicationCookie(
-            options =>
-            {
-                options.Cookie.HttpOnly = false;
-                options.Cookie.Expiration = TimeSpan.FromDays(30);
-                options.Cookie.SameSite = SameSiteMode.None;
-                options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
-                options.ExpireTimeSpan = TimeSpan.FromDays(30);
-                options.SlidingExpiration = true;
-            });
-
-        builder.Services.ConfigureExternalCookie(options =>
-        {
-            options.Cookie.HttpOnly = false;
-            options.Cookie.Expiration = TimeSpan.FromDays(30);
-            options.Cookie.SameSite = SameSiteMode.None;
-            options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
-            options.ExpireTimeSpan = TimeSpan.FromDays(30);
-            options.SlidingExpiration = true;
-        });
-
         builder.ConfigureNginx();
 
         return builder.Build();
@@ -163,7 +167,14 @@ internal static class HostingExtensions
             app.UseExceptionHandler("/Error");
         }
 
-        app.UseForwardedHeaders();
+        var forwardedHeadersOptions = new ForwardedHeadersOptions()
+        {
+            ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedHost | ForwardedHeaders.XForwardedProto,
+            ForwardLimit = 1,
+            RequireHeaderSymmetry = false,
+        };
+
+        app.UseForwardedHeaders(forwardedHeadersOptions);
 
         app.Use(async (ctx, next) =>
         {
@@ -200,18 +211,25 @@ internal static class HostingExtensions
             await next(ctx);
         });
 
-        if (app.Configuration["Nginx:UseNginx"] != "true")
-        {
-            // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
-            app.UseHsts();
-            app.UseHttpsRedirection();
-        }
+        //if (app.Configuration["Nginx:UseNginx"] != "true")
+        //{
+        // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
+        app.UseHsts();
+        app.UseHttpsRedirection();
+        //}
 
         //app.UseDefaultFiles();
 
         app.UseStaticFiles();
 
-        app.UseCookiePolicy();
+        var cookiePolicyOptions = new CookiePolicyOptions()
+        {
+            HttpOnly = Microsoft.AspNetCore.CookiePolicy.HttpOnlyPolicy.None,
+            MinimumSameSitePolicy = SameSiteMode.Unspecified,
+            Secure = CookieSecurePolicy.SameAsRequest,
+        };
+
+        app.UseCookiePolicy(cookiePolicyOptions);
 
         app.UseRouting();
 
