@@ -31,14 +31,21 @@ internal static class HostingExtensions
 
         builder.Services.AddHttpLogging(options =>
         {
+            options.RequestHeaders.Add("Accept");
             options.RequestHeaders.Add("Accept-Encoding");
             options.RequestHeaders.Add("Accept-Language");
+            options.RequestHeaders.Add("Accept-Ranges");
             options.RequestHeaders.Add("Access-Control-Allow-Headers");
             options.RequestHeaders.Add("Access-Control-Allow-Methods");
             options.RequestHeaders.Add("Access-Control-Allow-Origin");
+            options.RequestHeaders.Add("Access-Control-Request-Headers");
+            options.RequestHeaders.Add("Access-Control-Request-Method");
+            options.RequestHeaders.Add("Access-Control-Request-Origin");
+            options.RequestHeaders.Add("Authorization");
             options.RequestHeaders.Add("Cache-Control");
             options.RequestHeaders.Add("Connection");
             options.RequestHeaders.Add("Connect-Time");
+            options.RequestHeaders.Add("Content-Length");
             options.RequestHeaders.Add("Content-Security-Policy");
             options.RequestHeaders.Add("Content-Type");
             options.RequestHeaders.Add("Content-Type-Options");
@@ -52,6 +59,9 @@ internal static class HostingExtensions
             options.RequestHeaders.Add("Forwarded-Proto");
             options.RequestHeaders.Add("Frame-Options");
             options.RequestHeaders.Add("Host");
+            options.RequestHeaders.Add("If-Modified-Since");
+            options.RequestHeaders.Add("If-None-Match");
+            options.RequestHeaders.Add("Last-Modified");
             options.RequestHeaders.Add("Location");
             options.RequestHeaders.Add("Method");
             options.RequestHeaders.Add("Origin");
@@ -98,14 +108,21 @@ internal static class HostingExtensions
             options.RequestHeaders.Add("X-Request-Id");
             options.RequestHeaders.Add("X-Request-Start");
 
+            options.ResponseHeaders.Add("Accept");
             options.ResponseHeaders.Add("Accept-Encoding");
             options.ResponseHeaders.Add("Accept-Language");
+            options.ResponseHeaders.Add("Accept-Ranges");
             options.ResponseHeaders.Add("Access-Control-Allow-Headers");
             options.ResponseHeaders.Add("Access-Control-Allow-Methods");
             options.ResponseHeaders.Add("Access-Control-Allow-Origin");
+            options.ResponseHeaders.Add("Access-Control-Request-Headers");
+            options.ResponseHeaders.Add("Access-Control-Request-Method");
+            options.ResponseHeaders.Add("Access-Control-Request-Origin");
+            options.ResponseHeaders.Add("Authorization");
             options.ResponseHeaders.Add("Cache-Control");
             options.ResponseHeaders.Add("Connection");
             options.ResponseHeaders.Add("Connect-Time");
+            options.ResponseHeaders.Add("Content-Length");
             options.ResponseHeaders.Add("Content-Security-Policy");
             options.ResponseHeaders.Add("Content-Type");
             options.ResponseHeaders.Add("Content-Type-Options");
@@ -119,6 +136,9 @@ internal static class HostingExtensions
             options.ResponseHeaders.Add("Forwarded-Proto");
             options.ResponseHeaders.Add("Frame-Options");
             options.ResponseHeaders.Add("Host");
+            options.ResponseHeaders.Add("If-Modified-Since");
+            options.ResponseHeaders.Add("If-None-Match");
+            options.ResponseHeaders.Add("Last-Modified");
             options.ResponseHeaders.Add("Location");
             options.ResponseHeaders.Add("Method");
             options.ResponseHeaders.Add("Origin");
