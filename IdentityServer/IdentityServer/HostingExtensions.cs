@@ -1,5 +1,7 @@
 using System.Net;
 
+using Duende.IdentityServer.Services;
+
 using IdentityServerHost;
 
 using Microsoft.AspNetCore.HttpLogging;
@@ -160,31 +162,101 @@ internal static class HostingExtensions
 
         builder.Services.AddHttpLogging(options =>
         {
+            options.RequestHeaders.Add("Accept-Encoding");
+            options.RequestHeaders.Add("Accept-Language");
+            options.RequestHeaders.Add("Access-Control-Allow-Headers");
+            options.RequestHeaders.Add("Access-Control-Allow-Methods");
+            options.RequestHeaders.Add("Access-Control-Allow-Origin");
+            options.RequestHeaders.Add("Cache-Control");
+            options.RequestHeaders.Add("Connection");
+            options.RequestHeaders.Add("Connect-Time");
+            options.RequestHeaders.Add("Content-Type");
+            options.RequestHeaders.Add("Cookie");
+            options.RequestHeaders.Add("Date");
+            options.RequestHeaders.Add("DNT");
+            options.RequestHeaders.Add("ETag");
+            options.RequestHeaders.Add("Host");
+            options.RequestHeaders.Add("Location");
+            options.RequestHeaders.Add("Method");
             options.RequestHeaders.Add("Origin");
+            options.RequestHeaders.Add("Path");
+            options.RequestHeaders.Add("PathBase");
             options.RequestHeaders.Add("Pragma");
+            options.RequestHeaders.Add("Protocol");
             options.RequestHeaders.Add("Referer");
-            options.RequestHeaders.Add("Upgrade-Insecure-Requests");
-            options.RequestHeaders.Add("Via");
-            options.RequestHeaders.Add("X-Real-IP");
-            options.RequestHeaders.Add("X-Original-Proto");
-            options.RequestHeaders.Add("X-Original-Host");
+            options.RequestHeaders.Add("Scheme");
             options.RequestHeaders.Add("Sec-Fetch-Dest");
             options.RequestHeaders.Add("Sec-Fetch-Mode");
             options.RequestHeaders.Add("Sec-Fetch-Site");
             options.RequestHeaders.Add("Sec-Fetch-User");
             options.RequestHeaders.Add("Sec-Gpc");
-            options.RequestHeaders.Add("X-Request-Id");
+            options.RequestHeaders.Add("Server");
+            options.RequestHeaders.Add("StatusCode");
+            options.RequestHeaders.Add("Total-Route-Time");
+            options.RequestHeaders.Add("Transfer-Encoding");
+            options.RequestHeaders.Add("Upgrade");
+            options.RequestHeaders.Add("Upgrade-Insecure-Requests");
+            options.RequestHeaders.Add("User-Agent");
+            options.RequestHeaders.Add("Via");
             options.RequestHeaders.Add("X-Forwarded-For");
             options.RequestHeaders.Add("X-Forwarded-Host");
             options.RequestHeaders.Add("X-Forwarded-Port");
             options.RequestHeaders.Add("X-Forwarded-Proto");
-            options.RequestHeaders.Add("Connect-Time");
+            options.RequestHeaders.Add("X-Original-For");
+            options.RequestHeaders.Add("X-Original-Host");
+            options.RequestHeaders.Add("X-Original-Port");
+            options.RequestHeaders.Add("X-Original-Proto");
+            options.RequestHeaders.Add("X-Real-IP");
+            options.RequestHeaders.Add("X-Request-Id");
             options.RequestHeaders.Add("X-Request-Start");
-            options.RequestHeaders.Add("Total-Route-Time");
 
+            options.ResponseHeaders.Add("Accept-Encoding");
+            options.ResponseHeaders.Add("Accept-Language");
+            options.ResponseHeaders.Add("Access-Control-Allow-Headers");
+            options.ResponseHeaders.Add("Access-Control-Allow-Methods");
             options.ResponseHeaders.Add("Access-Control-Allow-Origin");
             options.ResponseHeaders.Add("Cache-Control");
+            options.ResponseHeaders.Add("Connection");
+            options.ResponseHeaders.Add("Connect-Time");
+            options.ResponseHeaders.Add("Content-Type");
+            options.ResponseHeaders.Add("Cookie");
+            options.ResponseHeaders.Add("Date");
+            options.ResponseHeaders.Add("DNT");
+            options.ResponseHeaders.Add("ETag");
+            options.ResponseHeaders.Add("Host");
+            options.ResponseHeaders.Add("Location");
+            options.ResponseHeaders.Add("Method");
+            options.ResponseHeaders.Add("Origin");
+            options.ResponseHeaders.Add("Path");
+            options.ResponseHeaders.Add("PathBase");
             options.ResponseHeaders.Add("Pragma");
+            options.ResponseHeaders.Add("Protocol");
+            options.ResponseHeaders.Add("Referer");
+            options.ResponseHeaders.Add("Scheme");
+            options.ResponseHeaders.Add("Sec-Fetch-Dest");
+            options.ResponseHeaders.Add("Sec-Fetch-Mode");
+            options.ResponseHeaders.Add("Sec-Fetch-Site");
+            options.ResponseHeaders.Add("Sec-Fetch-User");
+            options.ResponseHeaders.Add("Sec-Gpc");
+            options.ResponseHeaders.Add("Server");
+            options.ResponseHeaders.Add("StatusCode");
+            options.ResponseHeaders.Add("Total-Route-Time");
+            options.ResponseHeaders.Add("Transfer-Encoding");
+            options.ResponseHeaders.Add("Upgrade");
+            options.ResponseHeaders.Add("Upgrade-Insecure-Requests");
+            options.ResponseHeaders.Add("User-Agent");
+            options.ResponseHeaders.Add("Via");
+            options.ResponseHeaders.Add("X-Forwarded-For");
+            options.ResponseHeaders.Add("X-Forwarded-Host");
+            options.ResponseHeaders.Add("X-Forwarded-Port");
+            options.ResponseHeaders.Add("X-Forwarded-Proto");
+            options.ResponseHeaders.Add("X-Original-For");
+            options.ResponseHeaders.Add("X-Original-Host");
+            options.ResponseHeaders.Add("X-Original-Port");
+            options.ResponseHeaders.Add("X-Original-Proto");
+            options.ResponseHeaders.Add("X-Real-IP");
+            options.ResponseHeaders.Add("X-Request-Id");
+            options.ResponseHeaders.Add("X-Request-Start");
 
             options.LoggingFields = HttpLoggingFields.RequestScheme | HttpLoggingFields.RequestPropertiesAndHeaders | HttpLoggingFields.ResponsePropertiesAndHeaders;
         });
@@ -198,7 +270,6 @@ internal static class HostingExtensions
     {
         app.UseSerilogRequestLogging();
 
-        /*
         app.Use(async (ctx, next) =>
         {
             var identityUri = new Uri(app.Configuration["IdentityUrl"]);
@@ -233,7 +304,6 @@ internal static class HostingExtensions
 
             await next(ctx);
         });
-        */
 
         var forwardedHeadersOptions = new ForwardedHeadersOptions()
         {
@@ -308,8 +378,8 @@ internal static class HostingExtensions
         //app.UseResponseCompression();
         //app.UseResponseCaching();
 
-        app.MapRazorPages()
-            .RequireAuthorization();
+        app.MapRazorPages();
+        //.RequireAuthorization();
 
         app.UseEndpoints(
             endpoints =>
