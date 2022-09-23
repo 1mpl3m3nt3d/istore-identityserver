@@ -225,7 +225,7 @@ internal static class HostingExtensions
             {
                 options.HttpOnly = Microsoft.AspNetCore.CookiePolicy.HttpOnlyPolicy.None;
                 options.MinimumSameSitePolicy = SameSiteMode.None;
-                options.Secure = .SameAsRequest;
+                options.Secure = CookieSecurePolicy.SameAsRequest;
             });
 
         builder.Services.ConfigureApplicationCookie(options =>
