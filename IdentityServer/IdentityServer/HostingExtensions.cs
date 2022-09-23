@@ -31,7 +31,7 @@ internal static class HostingExtensions
         builder.Services.AddCookiePolicy(options =>
         {
             options.HttpOnly = Microsoft.AspNetCore.CookiePolicy.HttpOnlyPolicy.None;
-            options.MinimumSameSitePolicy = SameSiteMode.Unspecified;
+            options.MinimumSameSitePolicy = SameSiteMode.None;
             options.Secure = CookieSecurePolicy.SameAsRequest;
         });
 
@@ -127,12 +127,20 @@ internal static class HostingExtensions
         builder.Services.ConfigureApplicationCookie(
             options =>
             {
+                options.Cookie.HttpOnly = false;
+                options.Cookie.Expiration = TimeSpan.FromDays(30);
+                options.Cookie.SameSite = SameSiteMode.None;
+                options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
                 options.ExpireTimeSpan = TimeSpan.FromDays(30);
                 options.SlidingExpiration = true;
             });
 
         builder.Services.ConfigureExternalCookie(options =>
         {
+            options.Cookie.HttpOnly = false;
+            options.Cookie.Expiration = TimeSpan.FromDays(30);
+            options.Cookie.SameSite = SameSiteMode.None;
+            options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
             options.ExpireTimeSpan = TimeSpan.FromDays(30);
             options.SlidingExpiration = true;
         });
