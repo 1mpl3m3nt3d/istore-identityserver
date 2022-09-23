@@ -196,50 +196,6 @@ internal static class HostingExtensions
 
     public static WebApplication ConfigurePipeline(this WebApplication app)
     {
-        app.UseSerilogRequestLogging();
-
-        app.UseCertificateForwarding();
-
-        /*
-        var forwardedHeadersOptions = new ForwardedHeadersOptions()
-        {
-            ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedHost | ForwardedHeaders.XForwardedProto,
-            ForwardLimit = 2,
-            RequireHeaderSymmetry = false,
-        };
-
-        forwardedHeadersOptions.KnownNetworks.Clear();
-        forwardedHeadersOptions.KnownProxies.Clear();
-        */
-
-        //app.UseForwardedHeaders(forwardedHeadersOptions);
-
-        if (app.Environment.IsDevelopment())
-        {
-            app.UseDeveloperExceptionPage();
-        }
-        else
-        {
-            app.UseExceptionHandler("/Error");
-
-            //if (app.Configuration["Nginx:UseNginx"] != "true")
-            //{
-            // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
-            app.UseHsts();
-            //}
-        }
-
-        app.UseHttpLogging();
-
-        app.Use(async (context, next) =>
-        {
-            app.Logger.LogInformation(
-                "Request RemoteIp: {RemoteIpAddress}",
-                context.Connection.RemoteIpAddress);
-
-            await next(context);
-        });
-
         app.Use(async (ctx, next) =>
         {
             var identityUri = new Uri(app.Configuration["IdentityUrl"]);
@@ -273,6 +229,50 @@ internal static class HostingExtensions
             }
 
             await next(ctx);
+        });
+
+        app.UseSerilogRequestLogging();
+
+        /*
+        var forwardedHeadersOptions = new ForwardedHeadersOptions()
+        {
+            ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedHost | ForwardedHeaders.XForwardedProto,
+            ForwardLimit = 2,
+            RequireHeaderSymmetry = false,
+        };
+
+        forwardedHeadersOptions.KnownNetworks.Clear();
+        forwardedHeadersOptions.KnownProxies.Clear();
+        */
+
+        //app.UseForwardedHeaders(forwardedHeadersOptions);
+
+        //app.UseCertificateForwarding();
+
+        if (app.Environment.IsDevelopment())
+        {
+            app.UseDeveloperExceptionPage();
+        }
+        else
+        {
+            app.UseExceptionHandler("/Error");
+
+            //if (app.Configuration["Nginx:UseNginx"] != "true")
+            //{
+            // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
+            app.UseHsts();
+            //}
+        }
+
+        app.UseHttpLogging();
+
+        app.Use(async (context, next) =>
+        {
+            app.Logger.LogInformation(
+                "Request RemoteIp: {RemoteIpAddress}",
+                context.Connection.RemoteIpAddress);
+
+            await next(context);
         });
 
         //if (app.Configuration["Nginx:UseNginx"] != "true")
