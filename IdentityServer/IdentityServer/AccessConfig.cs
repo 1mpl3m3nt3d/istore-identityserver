@@ -28,33 +28,33 @@ public static class AccessConfig
             new Client
             {
                 ClientId = "spa_pkce",
-                ClientName = "SPA PKCE Client", //"iStore",
+                ClientName = "SPA",
                 ClientSecrets = { new Secret("secret".Sha256()) },
                 ClientUri = $"{configuration["GlobalUrl"]}",
 
-                AllowedCorsOrigins = { configuration["BasketApi"], configuration["CatalogApi"], configuration["GlobalUrl"], configuration["IdentityUrl"], configuration["SpaUrl"] },
+                AllowedCorsOrigins = { configuration["GlobalUrl"], configuration["IdentityUrl"], configuration["SpaUrl"] },
                 AllowedGrantTypes = GrantTypes.Code,
-                AllowedScopes = { "openid", "profile", "spa", "catalog.bff", "basket.bff" },
+                AllowedScopes = { "openid", "profile", "spa" },
 
                 RedirectUris =
                 {
+                    $"{configuration["GlobalUrl"]}",
+                    $"{configuration["GlobalUrl"]}/login/callback",
+                    $"{configuration["GlobalUrl"]}/logout/callback",
                     $"{configuration["GlobalUrl"]}/signin-oidc",
                     $"{configuration["GlobalUrl"]}/signin/callback",
                     $"{configuration["GlobalUrl"]}/signout-oidc",
                     $"{configuration["GlobalUrl"]}/signout/callback",
                     $"{configuration["GlobalUrl"]}/silentrenew",
-                    $"{configuration["GlobalUrl"]}/login/callback",
-                    $"{configuration["GlobalUrl"]}/logout/callback",
 
-                    /*
+                    $"{configuration["SpaUrl"]}",
+                    $"{configuration["SpaUrl"]}/login/callback",
+                    $"{configuration["SpaUrl"]}/logout/callback",
                     $"{configuration["SpaUrl"]}/signin-oidc",
                     $"{configuration["SpaUrl"]}/signin/callback",
                     $"{configuration["SpaUrl"]}/signout-oidc",
                     $"{configuration["SpaUrl"]}/signout/callback",
                     $"{configuration["SpaUrl"]}/silentrenew",
-                    $"{configuration["SpaUrl"]}/login/callback",
-                    $"{configuration["SpaUrl"]}/logout/callback",
-                    */
                 },
 
                 PostLogoutRedirectUris =
@@ -64,19 +64,12 @@ public static class AccessConfig
                     $"{configuration["GlobalUrl"]}/signout/callback",
                     $"{configuration["GlobalUrl"]}/signout-oidc",
 
-                    /*
                     $"{configuration["SpaUrl"]}",
                     $"{configuration["SpaUrl"]}/logout/callback",
                     $"{configuration["SpaUrl"]}/signout/callback",
                     $"{configuration["SpaUrl"]}/signout-oidc",
-                    */
                 },
 
-                RequireConsent = false,
-                RequirePkce = true,
-                AllowAccessTokensViaBrowser = true,
-
-                /*
                 AbsoluteRefreshTokenLifetime = 2592000,
                 AccessTokenLifetime = 3600,
                 AccessTokenType = AccessTokenType.Jwt,
@@ -103,7 +96,6 @@ public static class AccessConfig
                 RequireRequestObject = false,
                 SlidingRefreshTokenLifetime = 1296000,
                 UpdateAccessTokenClaimsOnRefresh = true,
-                */
             },
             new Client
             {
