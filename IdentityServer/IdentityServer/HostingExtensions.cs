@@ -159,6 +159,31 @@ internal static class HostingExtensions
 
         builder.Services.AddHttpLogging(options =>
         {
+            options.RequestHeaders.Add("Origin");
+            options.RequestHeaders.Add("Pragma");
+            options.RequestHeaders.Add("Referer");
+            options.RequestHeaders.Add("Upgrade-Insecure-Requests");
+            options.RequestHeaders.Add("Via");
+            options.RequestHeaders.Add("X-Real-IP");
+            options.RequestHeaders.Add("X-Original-Proto");
+            options.RequestHeaders.Add("X-Original-Host");
+            options.RequestHeaders.Add("Sec-Fetch-Dest");
+            options.RequestHeaders.Add("Sec-Fetch-Mode");
+            options.RequestHeaders.Add("Sec-Fetch-Site");
+            options.RequestHeaders.Add("Sec-Gpc");
+            options.RequestHeaders.Add("X-Request-Id");
+            options.RequestHeaders.Add("X-Forwarded-For");
+            options.RequestHeaders.Add("X-Forwarded-Host");
+            options.RequestHeaders.Add("X-Forwarded-Port");
+            options.RequestHeaders.Add("X-Forwarded-Proto");
+            options.RequestHeaders.Add("Connect-Time");
+            options.RequestHeaders.Add("X-Request-Start");
+            options.RequestHeaders.Add("Total-Route-Time");
+
+            options.ResponseHeaders.Add("Access-Control-Allow-Origin");
+            options.ResponseHeaders.Add("Cache-Control");
+            options.ResponseHeaders.Add("Pragma");
+
             options.LoggingFields = HttpLoggingFields.RequestScheme | HttpLoggingFields.RequestPropertiesAndHeaders | HttpLoggingFields.ResponsePropertiesAndHeaders;
         });
 
