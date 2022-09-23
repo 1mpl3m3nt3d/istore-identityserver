@@ -20,14 +20,15 @@ internal static class HostingExtensions
             builder.Services.Configure<AppSettings>(configuration);
         }
 
-        /*
         builder.Services.Configure<ForwardedHeadersOptions>(options =>
         {
             options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedHost | ForwardedHeaders.XForwardedProto;
             options.ForwardLimit = 2;
             options.RequireHeaderSymmetry = false;
+
+            options.KnownNetworks.Clear();
+            options.KnownProxies.Clear();
         });
-        */
 
         builder.Services.AddHttpLogging(options =>
         {
@@ -53,6 +54,7 @@ internal static class HostingExtensions
             options.RequestHeaders.Add("Date");
             options.RequestHeaders.Add("DNT");
             options.RequestHeaders.Add("ETag");
+            options.RequestHeaders.Add("Forwarded-By");
             options.RequestHeaders.Add("Forwarded-For");
             options.RequestHeaders.Add("Forwarded-Host");
             options.RequestHeaders.Add("Forwarded-Port");
@@ -65,6 +67,7 @@ internal static class HostingExtensions
             options.RequestHeaders.Add("Location");
             options.RequestHeaders.Add("Method");
             options.RequestHeaders.Add("Origin");
+            options.RequestHeaders.Add("Original-By");
             options.RequestHeaders.Add("Original-For");
             options.RequestHeaders.Add("Original-Host");
             options.RequestHeaders.Add("Original-Port");
@@ -95,11 +98,13 @@ internal static class HostingExtensions
             options.RequestHeaders.Add("Via");
             options.RequestHeaders.Add("X-Content-Security-Policy");
             options.RequestHeaders.Add("X-Content-Type-Options");
+            options.RequestHeaders.Add("X-Forwarded-By");
             options.RequestHeaders.Add("X-Forwarded-For");
             options.RequestHeaders.Add("X-Forwarded-Host");
             options.RequestHeaders.Add("X-Forwarded-Port");
             options.RequestHeaders.Add("X-Forwarded-Proto");
             options.RequestHeaders.Add("X-Frame-Options");
+            options.RequestHeaders.Add("X-Original-By");
             options.RequestHeaders.Add("X-Original-For");
             options.RequestHeaders.Add("X-Original-Host");
             options.RequestHeaders.Add("X-Original-Port");
@@ -130,6 +135,7 @@ internal static class HostingExtensions
             options.ResponseHeaders.Add("Date");
             options.ResponseHeaders.Add("DNT");
             options.ResponseHeaders.Add("ETag");
+            options.ResponseHeaders.Add("Forwarded-By");
             options.ResponseHeaders.Add("Forwarded-For");
             options.ResponseHeaders.Add("Forwarded-Host");
             options.ResponseHeaders.Add("Forwarded-Port");
@@ -142,6 +148,7 @@ internal static class HostingExtensions
             options.ResponseHeaders.Add("Location");
             options.ResponseHeaders.Add("Method");
             options.ResponseHeaders.Add("Origin");
+            options.ResponseHeaders.Add("Original-By");
             options.ResponseHeaders.Add("Original-For");
             options.ResponseHeaders.Add("Original-Host");
             options.ResponseHeaders.Add("Original-Port");
@@ -172,11 +179,13 @@ internal static class HostingExtensions
             options.ResponseHeaders.Add("Via");
             options.ResponseHeaders.Add("X-Content-Security-Policy");
             options.ResponseHeaders.Add("X-Content-Type-Options");
+            options.ResponseHeaders.Add("X-Forwarded-By");
             options.ResponseHeaders.Add("X-Forwarded-For");
             options.ResponseHeaders.Add("X-Forwarded-Host");
             options.ResponseHeaders.Add("X-Forwarded-Port");
             options.ResponseHeaders.Add("X-Forwarded-Proto");
             options.ResponseHeaders.Add("X-Frame-Options");
+            options.ResponseHeaders.Add("X-Original-By");
             options.ResponseHeaders.Add("X-Original-For");
             options.ResponseHeaders.Add("X-Original-Host");
             options.ResponseHeaders.Add("X-Original-Port");
@@ -262,18 +271,25 @@ internal static class HostingExtensions
                 options.Csp.AddDeprecatedHeader = true;
                 options.Csp.Level = Duende.IdentityServer.Models.CspLevel.One;
 
-                options.IssuerUri = builder.Configuration["IdentityUrl"];
-
-                options.StrictJarValidation = false;
-                options.ValidateTenantOnAuthorization = false;
+                // see https://docs.duendesoftware.com/identityserver/v6/fundamentals/resources/
+                options.EmitStaticAudienceClaim = true;
 
                 options.Events.RaiseErrorEvents = true;
                 options.Events.RaiseFailureEvents = true;
                 options.Events.RaiseInformationEvents = true;
                 options.Events.RaiseSuccessEvents = true;
 
-                // see https://docs.duendesoftware.com/identityserver/v6/fundamentals/resources/
-                options.EmitStaticAudienceClaim = true;
+                options.IssuerUri = builder.Configuration["IdentityUrl"];
+
+                // see https://docs.duendesoftware.com/identityserver/v6/fundamentals/keys/
+                options.KeyManagement.Enabled = true;
+                options.KeyManagement.PropagationTime = TimeSpan.FromDays(2);
+                options.KeyManagement.RetentionDuration = TimeSpan.FromDays(7);
+                options.KeyManagement.RotationInterval = TimeSpan.FromDays(30);
+
+                options.StrictJarValidation = false;
+
+                options.ValidateTenantOnAuthorization = false;
             })
             .AddTestUsers(TestUsers.Users);
 
@@ -303,8 +319,25 @@ internal static class HostingExtensions
             // register your IdentityServer with Google at https://console.developers.google.com
             // enable the Google+ API
             // set the redirect URI to https://localhost:5001/signin-google
-            options.ClientId = "copy client ID from Google here";
-            options.ClientSecret = "copy client secret from Google here";
+            options.ClientId = builder.Configuration["Authentication:Google:ClientId"];
+            options.ClientSecret = builder.Configuration["Authentication:Google:ClientSecret"];
+        })
+        .AddOpenIdConnect("oidc", "IdentityServer", options =>
+        {
+            options.SignInScheme = IdentityServerConstants.ExternalCookieAuthenticationScheme;
+            options.SignOutScheme = IdentityServerConstants.SignoutScheme;
+            options.SaveTokens = true;
+
+            options.Authority = builder.Configuration["Authentication:Oidc:Authority"];
+            options.ClientId = "interactive.confidential";
+            options.ClientSecret = "secret";
+            options.ResponseType = "code";
+
+            options.TokenValidationParameters = new TokenValidationParameters
+            {
+                NameClaimType = "name",
+                RoleClaimType = "role"
+            };
         });
         */
 
@@ -319,19 +352,15 @@ internal static class HostingExtensions
 
         app.UseHttpLogging();
 
-        app.UseCertificateForwarding();
-
-        var forwardedHeadersOptions = new ForwardedHeadersOptions()
+        app.Use(async (context, next) =>
         {
-            ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedHost | ForwardedHeaders.XForwardedProto,
-            ForwardLimit = 2,
-            RequireHeaderSymmetry = false,
-        };
+            var remoteAddress = context.Connection.RemoteIpAddress;
+            var remotePort = context.Connection.RemotePort;
 
-        forwardedHeadersOptions.KnownNetworks.Clear();
-        forwardedHeadersOptions.KnownProxies.Clear();
+            app.Logger.LogInformation($"Request Remote: {remoteAddress}:{remotePort}");
 
-        app.UseForwardedHeaders(forwardedHeadersOptions);
+            await next(context);
+        });
 
         app.Use(async (ctx, next) =>
         {
@@ -371,6 +400,20 @@ internal static class HostingExtensions
             await next(ctx);
         });
 
+        var forwardedHeadersOptions = new ForwardedHeadersOptions()
+        {
+            ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedHost | ForwardedHeaders.XForwardedProto,
+            ForwardLimit = 2,
+            RequireHeaderSymmetry = false,
+        };
+
+        forwardedHeadersOptions.KnownNetworks.Clear();
+        forwardedHeadersOptions.KnownProxies.Clear();
+
+        app.UseForwardedHeaders(forwardedHeadersOptions);
+
+        app.UseCertificateForwarding();
+
         if (app.Environment.IsDevelopment())
         {
             app.UseDeveloperExceptionPage();
@@ -381,22 +424,10 @@ internal static class HostingExtensions
 
             // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
             app.UseHsts();
+            app.UseHttpsRedirection();
         }
 
-        app.Use(async (context, next) =>
-        {
-            var remoteAddress = context.Connection.RemoteIpAddress;
-            var remotePort = context.Connection.RemotePort;
-
-            app.Logger.LogInformation($"Request Remote: {remoteAddress}:{remotePort}");
-
-            await next(context);
-        });
-
-        app.UseHttpsRedirection();
-
         //app.UseDefaultFiles();
-
         app.UseStaticFiles();
 
         var cookiePolicyOptions = new CookiePolicyOptions()
@@ -415,8 +446,7 @@ internal static class HostingExtensions
         app.UseCors("CorsPolicy");
 
         app.UseIdentityServer();
-
-        app.UseAuthentication();
+        //app.UseAuthentication();
         app.UseAuthorization();
 
         //app.UseSession();
@@ -426,9 +456,11 @@ internal static class HostingExtensions
         app.MapRazorPages()
             .RequireAuthorization();
 
+        /*
         app.UseEndpoints(
             endpoints =>
             endpoints.MapDefaultControllerRoute());
+        */
 
         return app;
     }
