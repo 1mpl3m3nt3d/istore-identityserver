@@ -373,8 +373,8 @@ internal static class HostingExtensions
         {
             var identityUri = new Uri(app.Configuration["IdentityUrl"]);
 
-            //var identityUrl =
-            //    $"{identityUri.Scheme}://{identityUri.Host}{(identityUri.IsDefaultPort ? string.Empty : $":{identityUri.Port}")}";
+            var identityUrl =
+                $"{identityUri.Scheme}://{identityUri.Host}{(identityUri.IsDefaultPort ? string.Empty : $":{identityUri.Port}")}";
 
             if (identityUri is not null && identityUrl is not null)
             {
