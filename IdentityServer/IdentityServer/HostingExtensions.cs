@@ -373,12 +373,14 @@ internal static class HostingExtensions
         {
             var identityUri = new Uri(app.Configuration["IdentityUrl"]);
 
-            var identityUrl =
-                $"{identityUri.Scheme}://{identityUri.Host}{(identityUri.IsDefaultPort ? string.Empty : $":{identityUri.Port}")}";
+            //var identityUrl =
+            //    $"{identityUri.Scheme}://{identityUri.Host}{(identityUri.IsDefaultPort ? string.Empty : $":{identityUri.Port}")}";
 
             if (identityUri is not null && identityUrl is not null)
             {
                 ctx.Request.Scheme = identityUri.Scheme;
+                
+                /*
                 ctx.Request.Host = new HostString(
                     $"{identityUri.Host}{(identityUri.IsDefaultPort ? string.Empty : $":{identityUri.Port}")}");
 
@@ -402,6 +404,7 @@ internal static class HostingExtensions
                 {
                     responseUrls.Origin = identityUrl;
                 }
+                */
             }
 
             await next(ctx);
