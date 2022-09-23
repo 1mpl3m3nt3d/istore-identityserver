@@ -6,7 +6,8 @@
       "launchBrowser": true,
       "launchUrl": "",
       "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "ASPNETCORE_FORWARDEDHEADERS_ENABLED": true
       },
       "applicationUrl": "http://localhost:5002",
       "dotnetRunMessages": true
@@ -16,7 +17,8 @@
       "launchBrowser": true,
       "launchUrl": "",
       "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Production"
+        "ASPNETCORE_ENVIRONMENT": "Production",
+        "ASPNETCORE_FORWARDEDHEADERS_ENABLED": true
       },
       "applicationUrl": "http://localhost:5002",
       "dotnetRunMessages": true
@@ -27,8 +29,9 @@
       "launchUrl": "{Scheme}://{ServiceHost}:{ServicePort}",
       "publishAllPorts": true,
       "environmentVariables": {
-        "ASPNETCORE_URLS": "http://+:5002",
-        "ASPNETCORE_ENVIRONMENT": "Development"
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "ASPNETCORE_FORWARDEDHEADERS_ENABLED": true,
+        "ASPNETCORE_URLS": "http://+:5002"
       },
       "httpPort": 5002,
       "useSSL": false

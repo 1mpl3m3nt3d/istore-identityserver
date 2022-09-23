@@ -4,6 +4,7 @@ using Duende.IdentityServer.Services;
 
 using IdentityServerHost;
 
+using Microsoft.AspNetCore.HttpLogging;
 using Microsoft.AspNetCore.HttpOverrides;
 
 using Serilog;
@@ -16,6 +17,8 @@ internal static class HostingExtensions
     {
         builder.Services.AddRazorPages();
 
+        builder.Services.AddCertificateForwarding(options => { });
+
         if (configuration is not null)
         {
             builder.Services.Configure<AppSettings>(configuration);
@@ -24,8 +27,15 @@ internal static class HostingExtensions
         builder.Services.Configure<ForwardedHeadersOptions>(options =>
         {
             options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedHost | ForwardedHeaders.XForwardedProto;
-            options.ForwardLimit = 1;
+            options.ForwardLimit = 2;
             options.RequireHeaderSymmetry = false;
+        });
+
+        builder.Services.Configure<CookiePolicyOptions>(options =>
+        {
+            options.HttpOnly = Microsoft.AspNetCore.CookiePolicy.HttpOnlyPolicy.None;
+            options.MinimumSameSitePolicy = SameSiteMode.Unspecified;
+            options.Secure = CookieSecurePolicy.SameAsRequest;
         });
 
         builder.Services.ConfigureApplicationCookie(
@@ -133,8 +143,6 @@ internal static class HostingExtensions
         //builder.Services.Configure<RazorPagesOptions>(options =>
         //    options.Conventions.AuthorizeFolder("/ServerSideSessions", "admin"));
 
-        builder.Services.AddCertificateForwarding(options => { });
-
         builder.Services.AddAuthentication();
         /*
         .AddGoogle(options =>
@@ -149,6 +157,11 @@ internal static class HostingExtensions
         });
         */
 
+        builder.Services.AddHttpLogging(options =>
+        {
+            options.LoggingFields = HttpLoggingFields.RequestScheme | HttpLoggingFields.RequestPropertiesAndHeaders | HttpLoggingFields.ResponsePropertiesAndHeaders;
+        });
+
         builder.ConfigureNginx();
 
         return builder.Build();
@@ -158,6 +171,20 @@ internal static class HostingExtensions
     {
         app.UseSerilogRequestLogging();
 
+        app.UseCertificateForwarding();
+
+        var forwardedHeadersOptions = new ForwardedHeadersOptions()
+        {
+            ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedHost | ForwardedHeaders.XForwardedProto,
+            ForwardLimit = 2,
+            RequireHeaderSymmetry = false,
+        };
+
+        forwardedHeadersOptions.KnownNetworks.Clear();
+        forwardedHeadersOptions.KnownProxies.Clear();
+
+        app.UseForwardedHeaders(forwardedHeadersOptions);
+
         if (app.Environment.IsDevelopment())
         {
             app.UseDeveloperExceptionPage();
@@ -165,16 +192,24 @@ internal static class HostingExtensions
         else
         {
             app.UseExceptionHandler("/Error");
+
+            //if (app.Configuration["Nginx:UseNginx"] != "true")
+            //{
+            // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
+            app.UseHsts();
+            //}
         }
 
-        var forwardedHeadersOptions = new ForwardedHeadersOptions()
-        {
-            ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedHost | ForwardedHeaders.XForwardedProto,
-            ForwardLimit = 1,
-            RequireHeaderSymmetry = false,
-        };
+        app.UseHttpLogging();
 
-        app.UseForwardedHeaders(forwardedHeadersOptions);
+        app.Use(async (context, next) =>
+        {
+            app.Logger.LogInformation(
+                "Request RemoteIp: {RemoteIpAddress}",
+                context.Connection.RemoteIpAddress);
+
+            await next(context);
+        });
 
         app.Use(async (ctx, next) =>
         {
@@ -213,8 +248,6 @@ internal static class HostingExtensions
 
         //if (app.Configuration["Nginx:UseNginx"] != "true")
         //{
-        // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
-        app.UseHsts();
         app.UseHttpsRedirection();
         //}
 
@@ -237,11 +270,9 @@ internal static class HostingExtensions
 
         app.UseCors("CorsPolicy");
 
-        app.UseCertificateForwarding();
-        app.UseAuthentication();
-
         app.UseIdentityServer();
         app.UseAuthorization();
+        app.UseAuthentication();
 
         //app.UseSession();
         //app.UseResponseCompression();
