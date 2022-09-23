@@ -108,6 +108,8 @@ internal static class HostingExtensions
         //builder.Services.Configure<RazorPagesOptions>(options =>
         //    options.Conventions.AuthorizeFolder("/ServerSideSessions", "admin"));
 
+        builder.Services.AddCertificateForwarding(options => { });
+
         builder.Services.AddAuthentication();
         /*
         .AddGoogle(options =>
@@ -128,6 +130,12 @@ internal static class HostingExtensions
                 options.ExpireTimeSpan = TimeSpan.FromDays(30);
                 options.SlidingExpiration = true;
             });
+
+        builder.Services.ConfigureExternalCookie(options =>
+        {
+            options.ExpireTimeSpan = TimeSpan.FromDays(30);
+            options.SlidingExpiration = true;
+        });
 
         builder.ConfigureNginx();
 
