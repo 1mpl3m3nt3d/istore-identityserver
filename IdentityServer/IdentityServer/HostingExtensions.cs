@@ -281,6 +281,7 @@ internal static class HostingExtensions
 
                 // see https://docs.duendesoftware.com/identityserver/v6/fundamentals/resources/
                 options.EmitStaticAudienceClaim = true;
+                options.EmitStateHash = true;
 
                 options.Events.RaiseErrorEvents = true;
                 options.Events.RaiseFailureEvents = true;
