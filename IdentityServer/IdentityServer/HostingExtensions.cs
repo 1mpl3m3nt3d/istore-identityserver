@@ -1,5 +1,15 @@
 using System.Net;
 
+using Duende.IdentityServer;
+using Duende.IdentityServer.Services;
+
+using IdentityServerHost;
+
+using Microsoft.AspNetCore.HttpLogging;
+using Microsoft.AspNetCore.HttpOverrides;
+
+using Serilog;
+
 namespace IdentityServer;
 
 internal static class HostingExtensions
