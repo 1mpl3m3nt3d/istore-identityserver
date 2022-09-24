@@ -225,7 +225,7 @@ internal static class HostingExtensions
         builder.Services.AddCookiePolicy(options =>
             {
                 options.HttpOnly = Microsoft.AspNetCore.CookiePolicy.HttpOnlyPolicy.None;
-                options.MinimumSameSitePolicy = SameSiteMode.None;
+                options.MinimumSameSitePolicy = SameSiteMode.Unspecified;
                 options.Secure = CookieSecurePolicy.SameAsRequest;
             });
 
@@ -233,7 +233,7 @@ internal static class HostingExtensions
             {
                 options.Cookie.HttpOnly = false;
                 options.Cookie.Expiration = TimeSpan.FromDays(30);
-                options.Cookie.SameSite = SameSiteMode.None;
+                options.Cookie.SameSite = SameSiteMode.Unspecified;
                 options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
                 options.ExpireTimeSpan = TimeSpan.FromDays(30);
                 options.SlidingExpiration = true;
@@ -243,7 +243,7 @@ internal static class HostingExtensions
             {
                 options.Cookie.HttpOnly = false;
                 options.Cookie.Expiration = TimeSpan.FromDays(30);
-                options.Cookie.SameSite = SameSiteMode.None;
+                options.Cookie.SameSite = SameSiteMode.Unspecified;
                 options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
                 options.ExpireTimeSpan = TimeSpan.FromDays(30);
                 options.SlidingExpiration = true;
@@ -266,10 +266,13 @@ internal static class HostingExtensions
 
         var isBuilder = builder.Services.AddIdentityServer(options =>
             {
-                options.Authentication.CookieLifetime = TimeSpan.FromDays(30);
-                options.Authentication.CookieSameSiteMode = SameSiteMode.None;
-                options.Authentication.CookieSlidingExpiration = true;
                 options.Authentication.CookieAuthenticationScheme = IdentityServerConstants.DefaultCookieAuthenticationScheme;
+                options.Authentication.CookieLifetime = TimeSpan.FromDays(30);
+                options.Authentication.CookieSameSiteMode = SameSiteMode.Unspecified;
+                options.Authentication.CookieSlidingExpiration = true;
+                options.Authentication.CoordinateClientLifetimesWithUserSession = false;
+                options.Authentication.RequireAuthenticatedUserForSignOutMessage = true;
+                options.Authentication.RequireCspFrameSrcForSignout = false;
 
                 options.Cors.CorsPolicyName = "CorsPolicy";
 
@@ -320,6 +323,7 @@ internal static class HostingExtensions
         builder.Services.AddAuthentication(options =>
             {
                 options.DefaultAuthenticateScheme = IdentityServerConstants.DefaultCookieAuthenticationScheme;
+                options.RequireAuthenticatedSignIn = false;
             });
 
         /*
@@ -444,7 +448,7 @@ internal static class HostingExtensions
         var cookiePolicyOptions = new CookiePolicyOptions()
         {
             HttpOnly = Microsoft.AspNetCore.CookiePolicy.HttpOnlyPolicy.None,
-            MinimumSameSitePolicy = SameSiteMode.None,
+            MinimumSameSitePolicy = SameSiteMode.Unspecified,
             Secure = CookieSecurePolicy.SameAsRequest,
         };
 
@@ -457,7 +461,7 @@ internal static class HostingExtensions
         app.UseCors("CorsPolicy");
 
         app.UseIdentityServer();
-        //app.UseAuthentication();
+        app.UseAuthentication();
         app.UseAuthorization();
 
         //app.UseSession();
