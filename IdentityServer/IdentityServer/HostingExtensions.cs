@@ -1,5 +1,6 @@
 using System.Net;
 
+using Duende.IdentityServer;
 using Duende.IdentityServer.Services;
 
 using IdentityServerHost;
@@ -221,7 +222,6 @@ internal static class HostingExtensions
                 }
             });
 
-        /*
         builder.Services.AddCookiePolicy(options =>
             {
                 options.HttpOnly = Microsoft.AspNetCore.CookiePolicy.HttpOnlyPolicy.None;
@@ -256,21 +256,27 @@ internal static class HostingExtensions
                 "CorsPolicy",
                 corsBuilder => corsBuilder
                     .SetIsOriginAllowed((host) => true)
-                    .WithOrigins(builder.Configuration["BasketApi"], builder.Configuration["CatalogApi"], builder.Configuration["GlobalUrl"], builder.Configuration["IdentityUrl"], builder.Configuration["SpaUrl"])
+                    .WithOrigins(
+                        builder.Configuration["BasketApi"],
+                        builder.Configuration["CatalogApi"],
+                        builder.Configuration["GlobalUrl"],
+                        builder.Configuration["IdentityUrl"],
+                        builder.Configuration["SpaUrl"])
                     .AllowAnyHeader()
                     .AllowAnyMethod()
                     .AllowCredentials()));
 
         var isBuilder = builder.Services.AddIdentityServer(options =>
             {
-                //options.Authentication.CookieLifetime = TimeSpan.FromDays(30);
-                //options.Authentication.CookieSameSiteMode = SameSiteMode.Unspecified;
-                //options.Authentication.CookieSlidingExpiration = true;
+                options.Authentication.CookieLifetime = TimeSpan.FromDays(30);
+                options.Authentication.CookieSameSiteMode = SameSiteMode.Unspecified;
+                options.Authentication.CookieSlidingExpiration = true;
+                options.Authentication.CookieAuthenticationScheme = IdentityServerConstants.DefaultCookieAuthenticationScheme;
 
-                //options.Cors.CorsPolicyName = "CorsPolicy";
+                options.Cors.CorsPolicyName = "CorsPolicy";
 
-                //options.Csp.AddDeprecatedHeader = true;
-                //options.Csp.Level = Duende.IdentityServer.Models.CspLevel.One;
+                options.Csp.AddDeprecatedHeader = true;
+                options.Csp.Level = Duende.IdentityServer.Models.CspLevel.One;
 
                 // see https://docs.duendesoftware.com/identityserver/v6/fundamentals/resources/
                 options.EmitStaticAudienceClaim = true;
@@ -280,17 +286,17 @@ internal static class HostingExtensions
                 options.Events.RaiseInformationEvents = true;
                 options.Events.RaiseSuccessEvents = true;
 
-                //options.IssuerUri = builder.Configuration["IdentityUrl"];
+                options.IssuerUri = builder.Configuration["IdentityUrl"];
 
                 // see https://docs.duendesoftware.com/identityserver/v6/fundamentals/keys/
-                //options.KeyManagement.Enabled = true;
-                //options.KeyManagement.PropagationTime = TimeSpan.FromDays(2);
-                //options.KeyManagement.RetentionDuration = TimeSpan.FromDays(7);
-                //options.KeyManagement.RotationInterval = TimeSpan.FromDays(30);
+                options.KeyManagement.Enabled = true;
+                options.KeyManagement.PropagationTime = TimeSpan.FromDays(2);
+                options.KeyManagement.RetentionDuration = TimeSpan.FromDays(7);
+                options.KeyManagement.RotationInterval = TimeSpan.FromDays(30);
 
-                //options.StrictJarValidation = false;
+                options.StrictJarValidation = false;
 
-                //options.ValidateTenantOnAuthorization = false;
+                options.ValidateTenantOnAuthorization = false;
             })
             .AddTestUsers(TestUsers.Users);
 
@@ -311,12 +317,12 @@ internal static class HostingExtensions
         //builder.Services.Configure<RazorPagesOptions>(options =>
         //    options.Conventions.AuthorizeFolder("/ServerSideSessions", "admin"));
 
-        if (builder.Environment.IsDevelopment())
-        {
-            isBuilder.AddDeveloperSigningCredential();
-        }
+        //isBuilder.AddDeveloperSigningCredential();
 
-        //builder.Services.AddAuthentication(options => { });
+        builder.Services.AddAuthentication(options =>
+            {
+                options.DefaultAuthenticateScheme = IdentityServerConstants.DefaultCookieAuthenticationScheme;
+            });
 
         /*
         .AddGoogle(options =>
@@ -460,14 +466,9 @@ internal static class HostingExtensions
         //app.UseResponseCompression();
         //app.UseResponseCaching();
 
-        app.MapRazorPages()
-            .RequireAuthorization();
+        app.MapRazorPages().RequireAuthorization();
 
-        /*
-        app.UseEndpoints(
-            endpoints =>
-            endpoints.MapDefaultControllerRoute());
-        */
+        app.UseEndpoints(endpoints => endpoints.MapDefaultControllerRoute());
 
         return app;
     }
