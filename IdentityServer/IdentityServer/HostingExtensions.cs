@@ -1,15 +1,5 @@
 using System.Net;
 
-using Duende.IdentityServer;
-using Duende.IdentityServer.Services;
-
-using IdentityServerHost;
-
-using Microsoft.AspNetCore.HttpLogging;
-using Microsoft.AspNetCore.HttpOverrides;
-
-using Serilog;
-
 namespace IdentityServer;
 
 internal static class HostingExtensions
@@ -225,16 +215,15 @@ internal static class HostingExtensions
         builder.Services.AddCookiePolicy(options =>
             {
                 options.HttpOnly = Microsoft.AspNetCore.CookiePolicy.HttpOnlyPolicy.None;
-                options.MinimumSameSitePolicy = SameSiteMode.Unspecified;
+                options.MinimumSameSitePolicy = SameSiteMode.None;
                 options.Secure = CookieSecurePolicy.SameAsRequest;
             });
 
-        /*
         builder.Services.ConfigureApplicationCookie(options =>
             {
                 options.Cookie.HttpOnly = false;
                 options.Cookie.Expiration = TimeSpan.FromDays(30);
-                options.Cookie.SameSite = SameSiteMode.Unspecified;
+                options.Cookie.SameSite = SameSiteMode.None;
                 options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
                 options.ExpireTimeSpan = TimeSpan.FromDays(30);
                 options.SlidingExpiration = true;
@@ -244,12 +233,11 @@ internal static class HostingExtensions
             {
                 options.Cookie.HttpOnly = false;
                 options.Cookie.Expiration = TimeSpan.FromDays(30);
-                options.Cookie.SameSite = SameSiteMode.Unspecified;
+                options.Cookie.SameSite = SameSiteMode.None;
                 options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
                 options.ExpireTimeSpan = TimeSpan.FromDays(30);
                 options.SlidingExpiration = true;
             });
-        */
 
         builder.Services.AddCors(options =>
             options.AddPolicy(
@@ -269,7 +257,7 @@ internal static class HostingExtensions
         var isBuilder = builder.Services.AddIdentityServer(options =>
             {
                 options.Authentication.CookieLifetime = TimeSpan.FromDays(30);
-                options.Authentication.CookieSameSiteMode = SameSiteMode.Unspecified;
+                options.Authentication.CookieSameSiteMode = SameSiteMode.None;
                 options.Authentication.CookieSlidingExpiration = true;
                 options.Authentication.CookieAuthenticationScheme = IdentityServerConstants.DefaultCookieAuthenticationScheme;
 
@@ -446,7 +434,7 @@ internal static class HostingExtensions
         var cookiePolicyOptions = new CookiePolicyOptions()
         {
             HttpOnly = Microsoft.AspNetCore.CookiePolicy.HttpOnlyPolicy.None,
-            MinimumSameSitePolicy = SameSiteMode.Unspecified,
+            MinimumSameSitePolicy = SameSiteMode.None,
             Secure = CookieSecurePolicy.SameAsRequest,
         };
 
