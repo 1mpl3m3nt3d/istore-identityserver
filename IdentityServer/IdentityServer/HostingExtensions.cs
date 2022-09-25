@@ -302,7 +302,7 @@ internal static class HostingExtensions
                 options.Events.RaiseInformationEvents = true;
                 options.Events.RaiseSuccessEvents = true;
 
-                //options.IssuerUri = builder.Configuration["IdentityUrl"];
+                options.IssuerUri = builder.Configuration["IdentityUrl"];
 
                 // see https://docs.duendesoftware.com/identityserver/v6/fundamentals/keys/
                 options.KeyManagement.Enabled = true;
@@ -493,13 +493,11 @@ internal static class HostingExtensions
 
         //app.MapDefaultControllerRoute();
 
-        /*
         app.UseEndpoints(endpoints =>
             {
-                endpoints.MapRazorPages().RequireAuthorization();
+                //endpoints.MapRazorPages().RequireAuthorization();
                 endpoints.MapDefaultControllerRoute();
             });
-        */
 
         return app;
     }
