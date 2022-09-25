@@ -98,7 +98,7 @@ internal static class HostingExtensions
                 options.RequestHeaders.Add("Server");
                 options.RequestHeaders.Add("Set-Cookie");
                 options.RequestHeaders.Add("StatusCode");
-                options.RequestHeaders.Add("Strict-Transport-Securit");
+                options.RequestHeaders.Add("Strict-Transport-Security");
                 options.RequestHeaders.Add("Total-Route-Time");
                 options.RequestHeaders.Add("Transfer-Encoding");
                 options.RequestHeaders.Add("Upgrade");
@@ -183,7 +183,7 @@ internal static class HostingExtensions
                 options.ResponseHeaders.Add("Server");
                 options.ResponseHeaders.Add("Set-Cookie");
                 options.ResponseHeaders.Add("StatusCode");
-                options.ResponseHeaders.Add("Strict-Transport-Securit");
+                options.ResponseHeaders.Add("Strict-Transport-Security");
                 options.ResponseHeaders.Add("Total-Route-Time");
                 options.ResponseHeaders.Add("Transfer-Encoding");
                 options.ResponseHeaders.Add("Upgrade");
