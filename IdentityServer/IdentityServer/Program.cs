@@ -6,7 +6,7 @@ Log.Logger = new LoggerConfiguration()
     .WriteTo.Console()
     .CreateBootstrapLogger();
 
-Log.Information("Starting up");
+Log.Information("Starting up ...");
 
 try
 {
@@ -34,10 +34,10 @@ try
 }
 catch (Exception ex)
 {
-    Log.Fatal(ex, "Unhandled exception");
+    Log.Fatal(ex, "Unhandled exception!");
 }
 finally
 {
-    Log.Information("Shut down complete");
+    Log.Information("Shut down complete!");
     Log.CloseAndFlush();
 }

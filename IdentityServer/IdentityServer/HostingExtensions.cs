@@ -1,6 +1,7 @@
 using System.Net;
 
 using Duende.IdentityServer;
+using Duende.IdentityServer.Models;
 using Duende.IdentityServer.Services;
 
 using IdentityServerHost;
@@ -23,7 +24,10 @@ internal static class HostingExtensions
 
         builder.Services.Configure<ForwardedHeadersOptions>(options =>
             {
-                options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedHost | ForwardedHeaders.XForwardedProto;
+                options.ForwardedHeaders =
+                    ForwardedHeaders.XForwardedFor |
+                    ForwardedHeaders.XForwardedHost |
+                    ForwardedHeaders.XForwardedProto;
                 options.ForwardLimit = 2;
                 options.RequireHeaderSymmetry = false;
 
@@ -83,6 +87,9 @@ internal static class HostingExtensions
                 options.RequestHeaders.Add("Request-Id");
                 options.RequestHeaders.Add("Request-Start");
                 options.RequestHeaders.Add("Scheme");
+                options.RequestHeaders.Add("Sec-Ch-Ua");
+                options.RequestHeaders.Add("Sec-Ch-Ua-Mobile");
+                options.RequestHeaders.Add("Sec-Ch-Ua-Platform");
                 options.RequestHeaders.Add("Sec-Fetch-Dest");
                 options.RequestHeaders.Add("Sec-Fetch-Mode");
                 options.RequestHeaders.Add("Sec-Fetch-Site");
@@ -164,6 +171,9 @@ internal static class HostingExtensions
                 options.ResponseHeaders.Add("Request-Id");
                 options.ResponseHeaders.Add("Request-Start");
                 options.ResponseHeaders.Add("Scheme");
+                options.ResponseHeaders.Add("Sec-Ch-Ua");
+                options.ResponseHeaders.Add("Sec-Ch-Ua-Mobile");
+                options.ResponseHeaders.Add("Sec-Ch-Ua-Platform");
                 options.ResponseHeaders.Add("Sec-Fetch-Dest");
                 options.ResponseHeaders.Add("Sec-Fetch-Mode");
                 options.ResponseHeaders.Add("Sec-Fetch-Site");
@@ -196,7 +206,9 @@ internal static class HostingExtensions
                 options.ResponseHeaders.Add("X-Request-Start");
 
                 options.LoggingFields =
-                    HttpLoggingFields.RequestScheme | HttpLoggingFields.RequestPropertiesAndHeaders | HttpLoggingFields.ResponsePropertiesAndHeaders;
+                    HttpLoggingFields.RequestScheme |
+                    HttpLoggingFields.RequestPropertiesAndHeaders |
+                    HttpLoggingFields.ResponsePropertiesAndHeaders;
             });
 
         builder.Services.AddRazorPages();
@@ -277,18 +289,18 @@ internal static class HostingExtensions
                 options.Cors.CorsPolicyName = "CorsPolicy";
 
                 options.Csp.AddDeprecatedHeader = true;
-                options.Csp.Level = Duende.IdentityServer.Models.CspLevel.One;
+                options.Csp.Level = CspLevel.Two;
 
                 // see https://docs.duendesoftware.com/identityserver/v6/fundamentals/resources/
                 options.EmitStaticAudienceClaim = true;
-                options.EmitStateHash = true;
+                options.EmitStateHash = false;
 
                 options.Events.RaiseErrorEvents = true;
                 options.Events.RaiseFailureEvents = true;
                 options.Events.RaiseInformationEvents = true;
                 options.Events.RaiseSuccessEvents = true;
 
-                options.IssuerUri = builder.Configuration["IdentityUrl"];
+                //options.IssuerUri = builder.Configuration["IdentityUrl"];
 
                 // see https://docs.duendesoftware.com/identityserver/v6/fundamentals/keys/
                 options.KeyManagement.Enabled = true;
@@ -329,32 +341,32 @@ internal static class HostingExtensions
 
         /*
         .AddGoogle(options =>
-        {
-            options.SignInScheme = IdentityServerConstants.ExternalCookieAuthenticationScheme;
-
-            // register your IdentityServer with Google at https://console.developers.google.com
-            // enable the Google+ API
-            // set the redirect URI to https://localhost:5001/signin-google
-            options.ClientId = builder.Configuration["Authentication:Google:ClientId"];
-            options.ClientSecret = builder.Configuration["Authentication:Google:ClientSecret"];
-        })
-        .AddOpenIdConnect("oidc", "IdentityServer", options =>
-        {
-            options.SignInScheme = IdentityServerConstants.ExternalCookieAuthenticationScheme;
-            options.SignOutScheme = IdentityServerConstants.SignoutScheme;
-            options.SaveTokens = true;
-
-            options.Authority = builder.Configuration["Authentication:Oidc:Authority"];
-            options.ClientId = "interactive.confidential";
-            options.ClientSecret = "secret";
-            options.ResponseType = "code";
-
-            options.TokenValidationParameters = new TokenValidationParameters
             {
-                NameClaimType = "name",
-                RoleClaimType = "role"
-            };
-        });
+                options.SignInScheme = IdentityServerConstants.ExternalCookieAuthenticationScheme;
+
+                // register your IdentityServer with Google at https://console.developers.google.com
+                // enable the Google+ API
+                // set the redirect URI to https://localhost:5001/signin-google
+                options.ClientId = builder.Configuration["Authentication:Google:ClientId"];
+                options.ClientSecret = builder.Configuration["Authentication:Google:ClientSecret"];
+            })
+        .AddOpenIdConnect("oidc", "IdentityServer", options =>
+            {
+                options.SignInScheme = IdentityServerConstants.ExternalCookieAuthenticationScheme;
+                options.SignOutScheme = IdentityServerConstants.SignoutScheme;
+                options.SaveTokens = true;
+
+                options.Authority = builder.Configuration["Authentication:Oidc:Authority"];
+                options.ClientId = "interactive.confidential";
+                options.ClientSecret = "secret";
+                options.ResponseType = "code";
+
+                options.TokenValidationParameters = new TokenValidationParameters
+                {
+                    NameClaimType = "name",
+                    RoleClaimType = "role"
+                };
+            });
         */
 
         builder.ConfigureNginx();
@@ -385,11 +397,13 @@ internal static class HostingExtensions
             var identityUrl =
                 $"{identityUri.Scheme}://{identityUri.Host}{(identityUri.IsDefaultPort ? string.Empty : $":{identityUri.Port}")}";
 
+            var identityHost =
+                $"{identityUri.Host}{(identityUri.IsDefaultPort ? string.Empty : $":{identityUri.Port}")}";
+
             if (identityUri is not null && identityUrl is not null)
             {
                 ctx.Request.Scheme = identityUri.Scheme;
-                ctx.Request.Host = new HostString(
-                    $"{identityUri.Host}{(identityUri.IsDefaultPort ? string.Empty : $":{identityUri.Port}")}");
+                ctx.Request.Host = new HostString(identityHost);
 
                 var contextUrls = ctx.RequestServices.GetService<IServerUrls>();
 
@@ -418,7 +432,10 @@ internal static class HostingExtensions
 
         var forwardedHeadersOptions = new ForwardedHeadersOptions()
         {
-            ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedHost | ForwardedHeaders.XForwardedProto,
+            ForwardedHeaders =
+                ForwardedHeaders.XForwardedFor |
+                ForwardedHeaders.XForwardedHost |
+                ForwardedHeaders.XForwardedProto,
             ForwardLimit = 2,
             RequireHeaderSymmetry = false,
         };
@@ -438,7 +455,8 @@ internal static class HostingExtensions
         {
             app.UseExceptionHandler("/Error");
 
-            // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
+            // The default HSTS value is 30 days.
+            // see https://aka.ms/aspnetcore-hsts.
             app.UseHsts();
             app.UseHttpsRedirection();
         }
@@ -471,7 +489,15 @@ internal static class HostingExtensions
 
         app.MapRazorPages().RequireAuthorization();
 
-        app.UseEndpoints(endpoints => endpoints.MapDefaultControllerRoute());
+        app.MapDefaultControllerRoute();
+
+        /*
+        app.UseEndpoints(endpoints =>
+            {
+                endpoints.MapRazorPages().RequireAuthorization();
+                endpoints.MapDefaultControllerRoute();
+            });
+        */
 
         return app;
     }
