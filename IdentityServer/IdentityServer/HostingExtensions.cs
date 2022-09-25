@@ -291,11 +291,11 @@ internal static class HostingExtensions
                 options.Cors.CorsPolicyName = "CorsPolicy";
 
                 options.Csp.AddDeprecatedHeader = true;
-                options.Csp.Level = CspLevel.Two;
+                options.Csp.Level = CspLevel.One;
 
                 // see https://docs.duendesoftware.com/identityserver/v6/fundamentals/resources/
                 options.EmitStaticAudienceClaim = true;
-                options.EmitStateHash = false;
+                options.EmitStateHash = true;
 
                 options.Events.RaiseErrorEvents = true;
                 options.Events.RaiseFailureEvents = true;
@@ -491,7 +491,7 @@ internal static class HostingExtensions
 
         app.MapRazorPages().RequireAuthorization();
 
-        app.MapDefaultControllerRoute();
+        //app.MapDefaultControllerRoute();
 
         /*
         app.UseEndpoints(endpoints =>
