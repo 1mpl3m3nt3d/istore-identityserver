@@ -1,2 +1,2 @@
 
-web: $HOME/bin/start-nginx $HOME/heroku_output/IdentityServer
+web: $HOME/heroku_output/IdentityServer
