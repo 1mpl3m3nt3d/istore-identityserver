@@ -4,9 +4,7 @@
 using System;
 using System.Net;
 
-using IdentityServer4;
 using IdentityServer4.Extensions;
-using IdentityServer4.Models;
 
 using IdentityServerHost.Quickstart.UI;
 
@@ -70,7 +68,7 @@ namespace IdentityServer
 
             app.UseForwardedHeaders(forwardedHeadersOptions);
 
-            app.UseCertificateForwarding();
+            //app.UseCertificateForwarding();
 
             if (System.Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Production")
             {
@@ -144,7 +142,7 @@ namespace IdentityServer
 
             services.AddControllersWithViews();
 
-            services.AddCertificateForwarding(options => { });
+            //services.AddCertificateForwarding(options => { });
 
             services.AddHsts(options =>
                 {
@@ -165,6 +163,7 @@ namespace IdentityServer
                     }
                 });
 
+            /*
             services.ConfigureApplicationCookie(options =>
                 {
                     options.Cookie.HttpOnly = false;
@@ -184,6 +183,7 @@ namespace IdentityServer
                     options.ExpireTimeSpan = TimeSpan.FromDays(30);
                     options.SlidingExpiration = true;
                 });
+            */
 
             services.AddCors(options =>
                 options.AddPolicy(
@@ -202,18 +202,18 @@ namespace IdentityServer
 
             var isBuilder = services.AddIdentityServer(options =>
                 {
-                    options.Authentication.CookieAuthenticationScheme = IdentityServerConstants.DefaultCookieAuthenticationScheme;
-                    options.Authentication.CookieLifetime = TimeSpan.FromDays(30);
-                    options.Authentication.CookieSameSiteMode = SameSiteMode.Unspecified;
-                    options.Authentication.CookieSlidingExpiration = true;
+                    //options.Authentication.CookieAuthenticationScheme = IdentityServerConstants.DefaultCookieAuthenticationScheme;
+                    //options.Authentication.CookieLifetime = TimeSpan.FromDays(30);
+                    //options.Authentication.CookieSameSiteMode = SameSiteMode.Unspecified;
+                    //options.Authentication.CookieSlidingExpiration = true;
                     //options.Authentication.CoordinateClientLifetimesWithUserSession = false;
-                    options.Authentication.RequireAuthenticatedUserForSignOutMessage = true;
-                    options.Authentication.RequireCspFrameSrcForSignout = false;
+                    //options.Authentication.RequireAuthenticatedUserForSignOutMessage = true;
+                    //options.Authentication.RequireCspFrameSrcForSignout = false;
 
-                    options.Cors.CorsPolicyName = "CorsPolicy";
+                    //options.Cors.CorsPolicyName = "CorsPolicy";
 
-                    options.Csp.AddDeprecatedHeader = true;
-                    options.Csp.Level = CspLevel.One;
+                    //options.Csp.AddDeprecatedHeader = true;
+                    //options.Csp.Level = CspLevel.One;
 
                     // see https://docs.duendesoftware.com/identityserver/v6/fundamentals/resources/
                     options.EmitStaticAudienceClaim = true;
@@ -224,7 +224,7 @@ namespace IdentityServer
                     options.Events.RaiseInformationEvents = true;
                     options.Events.RaiseSuccessEvents = true;
 
-                    options.IssuerUri = configuration["IdentityUrl"];
+                    //options.IssuerUri = configuration["IdentityUrl"];
 
                     // see https://docs.duendesoftware.com/identityserver/v6/fundamentals/keys/
                     //options.KeyManagement.Enabled = true;
@@ -232,7 +232,7 @@ namespace IdentityServer
                     //options.KeyManagement.RetentionDuration = TimeSpan.FromDays(7);
                     //options.KeyManagement.RotationInterval = TimeSpan.FromDays(30);
 
-                    options.StrictJarValidation = false;
+                    //options.StrictJarValidation = false;
 
                     //options.ValidateTenantOnAuthorization = false;
                 })
@@ -258,6 +258,7 @@ namespace IdentityServer
             //builder.Services.Configure<RazorPagesOptions>(options =>
             //    options.Conventions.AuthorizeFolder("/ServerSideSessions", "admin"));
 
+            /*
             services.AddAuthentication(options =>
             {
                 options.DefaultAuthenticateScheme = IdentityServerConstants.DefaultCookieAuthenticationScheme;
