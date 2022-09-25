@@ -371,7 +371,7 @@ internal static class HostingExtensions
             });
         */
 
-        builder.ConfigureNginx();
+        builder.AddNginxConfiguration();
 
         return builder.Build();
     }
@@ -504,15 +504,17 @@ internal static class HostingExtensions
         return app;
     }
 
-    public static WebApplicationBuilder ConfigureNginx(this WebApplicationBuilder builder)
+    public static WebApplicationBuilder AddNginxConfiguration(this WebApplicationBuilder builder, IConfiguration? configuration = null)
     {
-        if (builder.Configuration["Nginx:UseNginx"] == "true")
+        configuration ??= builder.Configuration;
+
+        if (configuration["Nginx:UseNginx"] == "true")
         {
             try
             {
-                if (builder.Configuration["Nginx:UseInitFile"] == "true")
+                if (configuration["Nginx:UseInitFile"] == "true")
                 {
-                    var initFile = builder.Configuration["Nginx:InitFilePath"] ?? "/tmp/app-initialized";
+                    var initFile = configuration["Nginx:InitFilePath"] ?? "/tmp/app-initialized";
 
                     if (!File.Exists(initFile))
                     {
@@ -529,9 +531,9 @@ internal static class HostingExtensions
 
             try
             {
-                if (builder.Configuration["Nginx:UseUnixSocket"] == "true")
+                if (configuration["Nginx:UseUnixSocket"] == "true")
                 {
-                    var unixSocket = builder.Configuration["Nginx:UnixSocketPath"] ?? "/tmp/nginx.socket";
+                    var unixSocket = configuration["Nginx:UnixSocketPath"] ?? "/tmp/nginx.socket";
 
                     builder.WebHost.ConfigureKestrel(kestrel =>
                     {
@@ -540,9 +542,9 @@ internal static class HostingExtensions
                     });
                 }
 
-                if (builder.Configuration["Nginx:UsePort"] == "true")
+                if (configuration["Nginx:UsePort"] == "true")
                 {
-                    var portParsed = int.TryParse(builder.Configuration["Nginx:Port"], out var port);
+                    var portParsed = int.TryParse(configuration["Nginx:Port"], out var port);
 
                     if (portParsed)
                     {
@@ -561,7 +563,7 @@ internal static class HostingExtensions
         }
         else
         {
-            var portEnv = builder.Configuration["PORT"] ?? Environment.GetEnvironmentVariable("PORT");
+            var portEnv = configuration["PORT"] ?? Environment.GetEnvironmentVariable("PORT");
 
             try
             {
@@ -580,14 +582,28 @@ internal static class HostingExtensions
                 }
                 else
                 {
-                    var identityUrl = builder.Configuration["IdentityUrl"];
-                    var identityPort = new Uri(identityUrl).Port;
+                    var identityUrl = configuration["IdentityUrl"];
 
-                    builder.WebHost.ConfigureKestrel(kestrel =>
+                    if (identityUrl != null)
                     {
-                        kestrel.ListenAnyIP(identityPort);
-                        kestrel.AllowAlternateSchemes = true;
-                    });
+                        try
+                        {
+                            var identityPort = new Uri(identityUrl)?.Port;
+
+                            if (identityPort is int @port)
+                            {
+                                builder.WebHost.ConfigureKestrel(kestrel =>
+                                {
+                                    kestrel.ListenAnyIP(@port);
+                                    kestrel.AllowAlternateSchemes = true;
+                                });
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.WriteLine($"There was an exception while configuring Kestrel:\n{ex.Message}");
+                        }
+                    }
                 }
             }
             catch (Exception ex)
