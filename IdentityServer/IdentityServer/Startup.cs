@@ -1,12 +1,7 @@
 // Copyright (c) Brock Allen & Dominick Baier. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
 
-using System;
-using System.Net;
-
-using IdentityServer4;
 using IdentityServer4.Extensions;
-using IdentityServer4.Models;
 
 using IdentityServerHost.Quickstart.UI;
 
@@ -16,8 +11,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-
-using Serilog;
 
 namespace IdentityServer
 {
@@ -35,10 +28,11 @@ namespace IdentityServer
 
         public void Configure(IApplicationBuilder app)
         {
-            app.UseSerilogRequestLogging();
+            //app.UseSerilogRequestLogging();
 
             app.Use(async (ctx, next) =>
                 {
+                    /*
                     var identityUri = new Uri(Configuration["IdentityUrl"]);
 
                     var identityUrl =
@@ -52,8 +46,9 @@ namespace IdentityServer
                         ctx.Request.Scheme = identityUri.Scheme;
                         ctx.Request.Host = new HostString(identityHost);
                     }
+                    */
 
-                    ctx.SetIdentityServerOrigin(identityUrl);
+                    ctx.SetIdentityServerOrigin(Configuration["IdentityUrl"]); // (identityUrl);
 
                     await next();
                 });
@@ -62,18 +57,18 @@ namespace IdentityServer
             {
                 ForwardedHeaders =
                     ForwardedHeaders.XForwardedFor |
-                    ForwardedHeaders.XForwardedHost |
+                    //ForwardedHeaders.XForwardedHost |
                     ForwardedHeaders.XForwardedProto,
-                ForwardLimit = 2,
+                //ForwardLimit = 2,
                 RequireHeaderSymmetry = false,
             };
 
-            forwardedHeadersOptions.KnownNetworks.Clear();
-            forwardedHeadersOptions.KnownProxies.Clear();
+            //forwardedHeadersOptions.KnownNetworks.Clear();
+            //forwardedHeadersOptions.KnownProxies.Clear();
 
             app.UseForwardedHeaders(forwardedHeadersOptions);
 
-            app.UseCertificateForwarding();
+            //app.UseCertificateForwarding();
 
             if (System.Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Production")
             {
@@ -123,10 +118,13 @@ namespace IdentityServer
 
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddControllersWithViews();
+
             var configuration = Configuration;
 
             services.Configure<AppSettings>(configuration);
 
+            /*
             services.Configure<ForwardedHeadersOptions>(options =>
                 {
                     options.ForwardedHeaders =
@@ -139,9 +137,24 @@ namespace IdentityServer
                     options.KnownNetworks.Clear();
                     options.KnownProxies.Clear();
                 });
+            */
 
-            services.AddControllersWithViews();
+            services.AddCors(options =>
+                options.AddPolicy(
+                    "CorsPolicy",
+                    corsBuilder => corsBuilder
+                        .SetIsOriginAllowed((host) => true)
+                        .WithOrigins(
+                            configuration["BasketApi"],
+                            configuration["CatalogApi"],
+                            configuration["GlobalUrl"],
+                            configuration["IdentityUrl"],
+                            configuration["SpaUrl"])
+                        .AllowAnyHeader()
+                        .AllowAnyMethod()
+                        .AllowCredentials()));
 
+            /*
             services.AddCertificateForwarding(options => { });
 
             services.AddHsts(options =>
@@ -182,35 +195,21 @@ namespace IdentityServer
                     options.ExpireTimeSpan = TimeSpan.FromDays(30);
                     options.SlidingExpiration = true;
                 });
-
-            services.AddCors(options =>
-                options.AddPolicy(
-                    "CorsPolicy",
-                    corsBuilder => corsBuilder
-                        .SetIsOriginAllowed((host) => true)
-                        .WithOrigins(
-                            configuration["BasketApi"],
-                            configuration["CatalogApi"],
-                            configuration["GlobalUrl"],
-                            configuration["IdentityUrl"],
-                            configuration["SpaUrl"])
-                        .AllowAnyHeader()
-                        .AllowAnyMethod()
-                        .AllowCredentials()));
+            */
 
             var isBuilder = services.AddIdentityServer(options =>
                 {
-                    options.Authentication.CookieAuthenticationScheme = IdentityServerConstants.DefaultCookieAuthenticationScheme;
-                    options.Authentication.CookieLifetime = TimeSpan.FromDays(30);
-                    options.Authentication.CookieSameSiteMode = SameSiteMode.Unspecified;
-                    options.Authentication.CookieSlidingExpiration = true;
-                    options.Authentication.RequireAuthenticatedUserForSignOutMessage = true;
-                    options.Authentication.RequireCspFrameSrcForSignout = false;
+                    //options.Authentication.CookieAuthenticationScheme = IdentityServerConstants.DefaultCookieAuthenticationScheme;
+                    //options.Authentication.CookieLifetime = TimeSpan.FromDays(30);
+                    //options.Authentication.CookieSameSiteMode = SameSiteMode.Unspecified;
+                    //options.Authentication.CookieSlidingExpiration = true;
+                    //options.Authentication.RequireAuthenticatedUserForSignOutMessage = true;
+                    //options.Authentication.RequireCspFrameSrcForSignout = false;
 
-                    options.Cors.CorsPolicyName = "CorsPolicy";
+                    //options.Cors.CorsPolicyName = "CorsPolicy";
 
-                    options.Csp.AddDeprecatedHeader = true;
-                    options.Csp.Level = CspLevel.One;
+                    //options.Csp.AddDeprecatedHeader = true;
+                    //options.Csp.Level = CspLevel.One;
 
                     // see https://docs.duendesoftware.com/identityserver/v6/fundamentals/resources/
                     options.EmitStaticAudienceClaim = true;
@@ -220,9 +219,9 @@ namespace IdentityServer
                     options.Events.RaiseInformationEvents = true;
                     options.Events.RaiseSuccessEvents = true;
 
-                    options.IssuerUri = configuration["IdentityUrl"];
+                    //options.IssuerUri = configuration["IdentityUrl"];
 
-                    options.StrictJarValidation = false;
+                    //options.StrictJarValidation = false;
                 })
                 .AddTestUsers(TestUsers.Users);
 
@@ -234,11 +233,13 @@ namespace IdentityServer
             // not recommended for production - you need to store your key material somewhere secure
             isBuilder.AddDeveloperSigningCredential();
 
+            /*
             services.AddAuthentication(options =>
                 {
                     options.DefaultAuthenticateScheme = IdentityServerConstants.DefaultCookieAuthenticationScheme;
                     options.RequireAuthenticatedSignIn = false;
                 });
+            */
 
             /*
             .AddGoogle(options =>
