@@ -4,6 +4,7 @@
 using System;
 using System.Net;
 
+using IdentityServer4;
 using IdentityServer4.Extensions;
 
 using IdentityServerHost.Quickstart.UI;
@@ -161,7 +162,6 @@ namespace IdentityServer
                     }
                 });
 
-            /*
             services.ConfigureApplicationCookie(options =>
                 {
                     options.Cookie.HttpOnly = false;
@@ -181,7 +181,6 @@ namespace IdentityServer
                     options.ExpireTimeSpan = TimeSpan.FromDays(30);
                     options.SlidingExpiration = true;
                 });
-            */
 
             services.AddCors(options =>
                 options.AddPolicy(
@@ -234,13 +233,11 @@ namespace IdentityServer
             // not recommended for production - you need to store your key material somewhere secure
             isBuilder.AddDeveloperSigningCredential();
 
-            /*
             services.AddAuthentication(options =>
                 {
                     options.DefaultAuthenticateScheme = IdentityServerConstants.DefaultCookieAuthenticationScheme;
                     options.RequireAuthenticatedSignIn = false;
                 });
-            */
 
             /*
             .AddGoogle(options =>
