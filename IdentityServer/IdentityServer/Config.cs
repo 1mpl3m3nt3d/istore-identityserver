@@ -34,25 +34,14 @@ namespace IdentityServer
                     ClientId = "spa_pkce",
                     ClientName = "SPA",
                     ClientSecrets = { new Secret("secret".Sha256()) },
-                    ClientUri = $"{configuration["GlobalUrl"]}",
+                    ClientUri = $"{configuration["SpaUrl"]}",
 
-                    AllowedCorsOrigins = { configuration["GlobalUrl"], configuration["IdentityUrl"], configuration["SpaUrl"] },
+                    AllowedCorsOrigins = { configuration["BasketApi"], configuration["CatalogApi"], configuration["GlobalUrl"], configuration["IdentityUrl"], configuration["SpaUrl"] },
                     AllowedGrantTypes = GrantTypes.Code,
-                    AllowedScopes = { "openid", "profile", "spa" },
+                    AllowedScopes = { "basket.bff", "catalog.bff", "openid", "profile", "spa" },
 
                     RedirectUris =
                     {
-                        $"{configuration["GlobalUrl"]}",
-                        $"{configuration["GlobalUrl"]}/login/callback",
-                        $"{configuration["GlobalUrl"]}/logout/callback",
-                        $"{configuration["GlobalUrl"]}/signin/callback",
-                        $"{configuration["GlobalUrl"]}/signin-callback-oidc",
-                        $"{configuration["GlobalUrl"]}/signin-oidc",
-                        $"{configuration["GlobalUrl"]}/signout/callback",
-                        $"{configuration["GlobalUrl"]}/signout-callback-oidc",
-                        $"{configuration["GlobalUrl"]}/signout-oidc",
-                        $"{configuration["GlobalUrl"]}/silentrenew",
-
                         $"{configuration["SpaUrl"]}",
                         $"{configuration["SpaUrl"]}/login/callback",
                         $"{configuration["SpaUrl"]}/logout/callback",
@@ -67,12 +56,6 @@ namespace IdentityServer
 
                     PostLogoutRedirectUris =
                     {
-                        $"{configuration["GlobalUrl"]}",
-                        $"{configuration["GlobalUrl"]}/logout/callback",
-                        $"{configuration["GlobalUrl"]}/signout/callback",
-                        $"{configuration["GlobalUrl"]}/signout-callback-oidc",
-                        $"{configuration["GlobalUrl"]}/signout-oidc",
-
                         $"{configuration["SpaUrl"]}",
                         $"{configuration["SpaUrl"]}/logout/callback",
                         $"{configuration["SpaUrl"]}/signout/callback",
@@ -80,31 +63,9 @@ namespace IdentityServer
                         $"{configuration["SpaUrl"]}/signout-oidc",
                     },
 
-                    AbsoluteRefreshTokenLifetime = 2592000,
-                    AccessTokenLifetime = 3600,
-                    AccessTokenType = AccessTokenType.Jwt,
-                    AllowAccessTokensViaBrowser = true,
-                    AllowOfflineAccess = true,
-                    AllowPlainTextPkce = false,
-                    AllowRememberConsent = true,
-                    AlwaysIncludeUserClaimsInIdToken = true,
-                    AuthorizationCodeLifetime = 300,
-                    AlwaysSendClientClaims = true,
-                    BackChannelLogoutSessionRequired = true,
-                    ConsentLifetime = null,
-                    Enabled = true,
-                    EnableLocalLogin = true,
-                    FrontChannelLogoutSessionRequired = true,
-                    IdentityTokenLifetime = 300,
-                    IncludeJwtId = true,
-                    RefreshTokenExpiration = TokenExpiration.Sliding,
-                    RefreshTokenUsage = TokenUsage.ReUse,
-                    RequireClientSecret = true,
-                    RequireConsent = false,
                     RequirePkce = true,
-                    RequireRequestObject = false,
-                    SlidingRefreshTokenLifetime = 1296000,
-                    UpdateAccessTokenClaimsOnRefresh = true,
+                    RequireConsent = false,
+                    AllowAccessTokensViaBrowser = true,
                 },
                 new Client
                 {
@@ -112,7 +73,7 @@ namespace IdentityServer
                     ClientName = "Basket Swagger UI",
                     ClientUri = $"{configuration["BasketApi"]}",
 
-                    AllowedCorsOrigins = { configuration["BasketApi"], configuration["GlobalUrl"], configuration["IdentityUrl"] },
+                    AllowedCorsOrigins = { configuration["BasketApi"], configuration["CatalogApi"], configuration["GlobalUrl"], configuration["IdentityUrl"], configuration["SpaUrl"] },
                     AllowedGrantTypes = GrantTypes.Implicit,
                     AllowedScopes = { "basket", "basket.bff", "openid", "profile", "spa" },
 
@@ -127,7 +88,7 @@ namespace IdentityServer
                     ClientName = "Catalog Swagger UI",
                     ClientUri = $"{configuration["CatalogApi"]}",
 
-                    AllowedCorsOrigins = { configuration["CatalogApi"], configuration["GlobalUrl"], configuration["IdentityUrl"] },
+                    AllowedCorsOrigins = { configuration["BasketApi"], configuration["CatalogApi"], configuration["GlobalUrl"], configuration["IdentityUrl"], configuration["SpaUrl"] },
                     AllowedGrantTypes = GrantTypes.Implicit,
                     AllowedScopes = { "catalog", "catalog.bff", "openid", "profile", "spa" },
 
