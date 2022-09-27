@@ -95,7 +95,7 @@ namespace IdentityServer
             var cookiePolicyOptions = new CookiePolicyOptions()
             {
                 HttpOnly = Microsoft.AspNetCore.CookiePolicy.HttpOnlyPolicy.None,
-                MinimumSameSitePolicy = SameSiteMode.Unspecified,
+                MinimumSameSitePolicy = SameSiteMode.None,
                 Secure = CookieSecurePolicy.SameAsRequest,
             };
 
@@ -167,7 +167,7 @@ namespace IdentityServer
                 {
                     options.Cookie.HttpOnly = false;
                     options.Cookie.Expiration = TimeSpan.FromDays(30);
-                    options.Cookie.SameSite = SameSiteMode.Unspecified;
+                    options.Cookie.SameSite = SameSiteMode.None;
                     options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
                     options.ExpireTimeSpan = TimeSpan.FromDays(30);
                     options.SlidingExpiration = true;
@@ -177,7 +177,7 @@ namespace IdentityServer
                 {
                     options.Cookie.HttpOnly = false;
                     options.Cookie.Expiration = TimeSpan.FromDays(30);
-                    options.Cookie.SameSite = SameSiteMode.Unspecified;
+                    options.Cookie.SameSite = SameSiteMode.None;
                     options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
                     options.ExpireTimeSpan = TimeSpan.FromDays(30);
                     options.SlidingExpiration = true;
@@ -200,14 +200,14 @@ namespace IdentityServer
 
             var isBuilder = services.AddIdentityServer(options =>
                 {
-                    //options.Authentication.CookieAuthenticationScheme = IdentityServerConstants.DefaultCookieAuthenticationScheme;
-                    //options.Authentication.CookieLifetime = TimeSpan.FromDays(30);
-                    //options.Authentication.CookieSameSiteMode = SameSiteMode.Unspecified;
-                    //options.Authentication.CookieSlidingExpiration = true;
-                    //options.Authentication.RequireAuthenticatedUserForSignOutMessage = true;
-                    //options.Authentication.RequireCspFrameSrcForSignout = false;
+                    options.Authentication.CookieAuthenticationScheme = IdentityServerConstants.DefaultCookieAuthenticationScheme;
+                    options.Authentication.CookieLifetime = TimeSpan.FromDays(30);
+                    options.Authentication.CookieSameSiteMode = SameSiteMode.None;
+                    options.Authentication.CookieSlidingExpiration = true;
+                    options.Authentication.RequireAuthenticatedUserForSignOutMessage = true;
+                    options.Authentication.RequireCspFrameSrcForSignout = false;
 
-                    //options.Cors.CorsPolicyName = "CorsPolicy";
+                    options.Cors.CorsPolicyName = "CorsPolicy";
 
                     options.Csp.AddDeprecatedHeader = true;
                     options.Csp.Level = CspLevel.One;
