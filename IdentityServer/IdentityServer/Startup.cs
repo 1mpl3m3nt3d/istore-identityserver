@@ -6,6 +6,7 @@ using System.Net;
 
 using IdentityServer4;
 using IdentityServer4.Extensions;
+using IdentityServer4.Models;
 
 using IdentityServerHost.Quickstart.UI;
 
@@ -208,8 +209,8 @@ namespace IdentityServer
 
                     //options.Cors.CorsPolicyName = "CorsPolicy";
 
-                    //options.Csp.AddDeprecatedHeader = true;
-                    //options.Csp.Level = CspLevel.One;
+                    options.Csp.AddDeprecatedHeader = true;
+                    options.Csp.Level = CspLevel.One;
 
                     // see https://docs.duendesoftware.com/identityserver/v6/fundamentals/resources/
                     options.EmitStaticAudienceClaim = true;
@@ -219,9 +220,9 @@ namespace IdentityServer
                     options.Events.RaiseInformationEvents = true;
                     options.Events.RaiseSuccessEvents = true;
 
-                    //options.IssuerUri = configuration["IdentityUrl"];
+                    options.IssuerUri = configuration["IdentityUrl"];
 
-                    //options.StrictJarValidation = false;
+                    options.StrictJarValidation = false;
                 })
                 .AddTestUsers(TestUsers.Users);
 
