@@ -1,17 +1,18 @@
 // Copyright (c) Brock Allen & Dominick Baier. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
 
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+
 using IdentityServer4.Configuration;
 using IdentityServer4.Events;
 using IdentityServer4.Extensions;
 using IdentityServer4.Models;
 using IdentityServer4.Services;
 using IdentityServer4.Validation;
+
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -43,12 +44,18 @@ namespace IdentityServerHost.Quickstart.UI
         [HttpGet]
         public async Task<IActionResult> Index()
         {
-            string userCodeParamName = _options.Value.UserInteraction.DeviceVerificationUserCodeParameter;
+            var userCodeParamName = _options.Value.UserInteraction.DeviceVerificationUserCodeParameter;
             string userCode = Request.Query[userCodeParamName];
-            if (string.IsNullOrWhiteSpace(userCode)) return View("UserCodeCapture");
+            if (string.IsNullOrWhiteSpace(userCode))
+            {
+                return View("UserCodeCapture");
+            }
 
             var vm = await BuildViewModelAsync(userCode);
-            if (vm == null) return View("Error");
+            if (vm == null)
+            {
+                return View("Error");
+            }
 
             vm.ConfirmUserCode = true;
             return View("UserCodeConfirmation", vm);
@@ -59,7 +66,10 @@ namespace IdentityServerHost.Quickstart.UI
         public async Task<IActionResult> UserCodeCapture(string userCode)
         {
             var vm = await BuildViewModelAsync(userCode);
-            if (vm == null) return View("Error");
+            if (vm == null)
+            {
+                return View("Error");
+            }
 
             return View("UserCodeConfirmation", vm);
         }
@@ -68,10 +78,16 @@ namespace IdentityServerHost.Quickstart.UI
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Callback(DeviceAuthorizationInputModel model)
         {
-            if (model == null) throw new ArgumentNullException(nameof(model));
+            if (model == null)
+            {
+                throw new ArgumentNullException(nameof(model));
+            }
 
             var result = await ProcessConsent(model);
-            if (result.HasValidationError) return View("Error");
+            if (result.HasValidationError)
+            {
+                return View("Error");
+            }
 
             return View("Success");
         }
@@ -81,7 +97,10 @@ namespace IdentityServerHost.Quickstart.UI
             var result = new ProcessConsentResult();
 
             var request = await _interaction.GetAuthorizationContextAsync(model.UserCode);
-            if (request == null) return result;
+            if (request == null)
+            {
+                return result;
+            }
 
             ConsentResponse grantedConsent = null;
 
@@ -93,6 +112,7 @@ namespace IdentityServerHost.Quickstart.UI
                 // emit event
                 await _events.RaiseAsync(new ConsentDeniedEvent(User.GetSubjectId(), request.Client.ClientId, request.ValidatedResources.RawScopeValues));
             }
+
             // user clicked 'yes' - validate the data
             else if (model.Button == "yes")
             {
@@ -109,7 +129,7 @@ namespace IdentityServerHost.Quickstart.UI
                     {
                         RememberConsent = model.RememberConsent,
                         ScopesValuesConsented = scopes.ToArray(),
-                        Description = model.Description
+                        Description = model.Description,
                     };
 
                     // emit event
@@ -167,7 +187,7 @@ namespace IdentityServerHost.Quickstart.UI
                 ClientName = request.Client.ClientName ?? request.Client.ClientId,
                 ClientUrl = request.Client.ClientUri,
                 ClientLogoUrl = request.Client.LogoUri,
-                AllowRememberConsent = request.Client.AllowRememberConsent
+                AllowRememberConsent = request.Client.AllowRememberConsent,
             };
 
             vm.IdentityScopes = request.ValidatedResources.Resources.IdentityResources.Select(x => CreateScopeViewModel(x, vm.ScopesConsented.Contains(x.Name) || model == null)).ToArray();
@@ -182,10 +202,12 @@ namespace IdentityServerHost.Quickstart.UI
                     apiScopes.Add(scopeVm);
                 }
             }
+
             if (ConsentOptions.EnableOfflineAccess && request.ValidatedResources.Resources.OfflineAccess)
             {
                 apiScopes.Add(GetOfflineAccessScope(vm.ScopesConsented.Contains(IdentityServer4.IdentityServerConstants.StandardScopes.OfflineAccess) || model == null));
             }
+
             vm.ApiScopes = apiScopes;
 
             return vm;
@@ -200,7 +222,7 @@ namespace IdentityServerHost.Quickstart.UI
                 Description = identity.Description,
                 Emphasize = identity.Emphasize,
                 Required = identity.Required,
-                Checked = check || identity.Required
+                Checked = check || identity.Required,
             };
         }
 
@@ -214,9 +236,10 @@ namespace IdentityServerHost.Quickstart.UI
                 Description = apiScope.Description,
                 Emphasize = apiScope.Emphasize,
                 Required = apiScope.Required,
-                Checked = check || apiScope.Required
+                Checked = check || apiScope.Required,
             };
         }
+
         private ScopeViewModel GetOfflineAccessScope(bool check)
         {
             return new ScopeViewModel
@@ -225,7 +248,7 @@ namespace IdentityServerHost.Quickstart.UI
                 DisplayName = ConsentOptions.OfflineAccessDisplayName,
                 Description = ConsentOptions.OfflineAccessDescription,
                 Emphasize = true,
-                Checked = check
+                Checked = check,
             };
         }
     }

@@ -1,24 +1,25 @@
 // Copyright (c) Brock Allen & Dominick Baier. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
 
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 using IdentityServer4.Events;
+using IdentityServer4.Extensions;
 using IdentityServer4.Models;
 using IdentityServer4.Services;
-using IdentityServer4.Extensions;
+using IdentityServer4.Validation;
+
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using System.Linq;
-using System.Threading.Tasks;
-using IdentityServer4.Validation;
-using System.Collections.Generic;
-using System;
 
 namespace IdentityServerHost.Quickstart.UI
 {
     /// <summary>
-    /// This controller processes the consent UI
+    /// This controller processes the consent UI.
     /// </summary>
     [SecurityHeaders]
     [Authorize]
@@ -39,10 +40,10 @@ namespace IdentityServerHost.Quickstart.UI
         }
 
         /// <summary>
-        /// Shows the consent screen
+        /// Shows the consent screen.
         /// </summary>
         /// <param name="returnUrl"></param>
-        /// <returns></returns>
+        /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
         [HttpGet]
         public async Task<IActionResult> Index(string returnUrl)
         {
@@ -56,7 +57,7 @@ namespace IdentityServerHost.Quickstart.UI
         }
 
         /// <summary>
-        /// Handles the consent screen postback
+        /// Handles the consent screen postback.
         /// </summary>
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -99,7 +100,10 @@ namespace IdentityServerHost.Quickstart.UI
 
             // validate return url is still valid
             var request = await _interaction.GetAuthorizationContextAsync(model.ReturnUrl);
-            if (request == null) return result;
+            if (request == null)
+            {
+                return result;
+            }
 
             ConsentResponse grantedConsent = null;
 
@@ -111,6 +115,7 @@ namespace IdentityServerHost.Quickstart.UI
                 // emit event
                 await _events.RaiseAsync(new ConsentDeniedEvent(User.GetSubjectId(), request.Client.ClientId, request.ValidatedResources.RawScopeValues));
             }
+
             // user clicked 'yes' - validate the data
             else if (model?.Button == "yes")
             {
@@ -127,7 +132,7 @@ namespace IdentityServerHost.Quickstart.UI
                     {
                         RememberConsent = model.RememberConsent,
                         ScopesValuesConsented = scopes.ToArray(),
-                        Description = model.Description
+                        Description = model.Description,
                     };
 
                     // emit event
@@ -191,13 +196,13 @@ namespace IdentityServerHost.Quickstart.UI
                 ClientName = request.Client.ClientName ?? request.Client.ClientId,
                 ClientUrl = request.Client.ClientUri,
                 ClientLogoUrl = request.Client.LogoUri,
-                AllowRememberConsent = request.Client.AllowRememberConsent
+                AllowRememberConsent = request.Client.AllowRememberConsent,
             };
 
             vm.IdentityScopes = request.ValidatedResources.Resources.IdentityResources.Select(x => CreateScopeViewModel(x, vm.ScopesConsented.Contains(x.Name) || model == null)).ToArray();
 
             var apiScopes = new List<ScopeViewModel>();
-            foreach(var parsedScope in request.ValidatedResources.ParsedScopes)
+            foreach (var parsedScope in request.ValidatedResources.ParsedScopes)
             {
                 var apiScope = request.ValidatedResources.Resources.FindApiScope(parsedScope.ParsedName);
                 if (apiScope != null)
@@ -206,10 +211,12 @@ namespace IdentityServerHost.Quickstart.UI
                     apiScopes.Add(scopeVm);
                 }
             }
+
             if (ConsentOptions.EnableOfflineAccess && request.ValidatedResources.Resources.OfflineAccess)
             {
                 apiScopes.Add(GetOfflineAccessScope(vm.ScopesConsented.Contains(IdentityServer4.IdentityServerConstants.StandardScopes.OfflineAccess) || model == null));
             }
+
             vm.ApiScopes = apiScopes;
 
             return vm;
@@ -224,14 +231,14 @@ namespace IdentityServerHost.Quickstart.UI
                 Description = identity.Description,
                 Emphasize = identity.Emphasize,
                 Required = identity.Required,
-                Checked = check || identity.Required
+                Checked = check || identity.Required,
             };
         }
 
         public ScopeViewModel CreateScopeViewModel(ParsedScopeValue parsedScopeValue, ApiScope apiScope, bool check)
         {
             var displayName = apiScope.DisplayName ?? apiScope.Name;
-            if (!String.IsNullOrWhiteSpace(parsedScopeValue.ParsedParameter))
+            if (!string.IsNullOrWhiteSpace(parsedScopeValue.ParsedParameter))
             {
                 displayName += ":" + parsedScopeValue.ParsedParameter;
             }
@@ -243,7 +250,7 @@ namespace IdentityServerHost.Quickstart.UI
                 Description = apiScope.Description,
                 Emphasize = apiScope.Emphasize,
                 Required = apiScope.Required,
-                Checked = check || apiScope.Required
+                Checked = check || apiScope.Required,
             };
         }
 
@@ -255,7 +262,7 @@ namespace IdentityServerHost.Quickstart.UI
                 DisplayName = ConsentOptions.OfflineAccessDisplayName,
                 Description = ConsentOptions.OfflineAccessDescription,
                 Emphasize = true,
-                Checked = check
+                Checked = check,
             };
         }
     }
