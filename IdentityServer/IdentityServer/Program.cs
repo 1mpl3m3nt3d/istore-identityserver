@@ -6,13 +6,18 @@ Log.Logger = new LoggerConfiguration()
     .WriteTo.Console()
     .CreateBootstrapLogger();
 
-Log.Information("Starting up ...");
+Log.Information("Starting up...");
 
 try
 {
     var baseDirectory = AppDomain.CurrentDomain.BaseDirectory;
 
-    var builder = WebApplication.CreateBuilder(new WebApplicationOptions() { ContentRootPath = baseDirectory });
+    var webApplicationOptions = new WebApplicationOptions()
+    {
+        ContentRootPath = baseDirectory,
+    };
+
+    var builder = WebApplication.CreateBuilder(webApplicationOptions);
 
     builder.Host.UseSerilog((ctx, lc) => lc
         .WriteTo.Console(outputTemplate: "[{Timestamp:HH:mm:ss} {Level}] {SourceContext}{NewLine}{Message:lj}{NewLine}{Exception}{NewLine}")
@@ -20,11 +25,11 @@ try
         .ReadFrom.Configuration(ctx.Configuration));
 
     var configuration = new ConfigurationBuilder()
-    .SetBasePath(baseDirectory)
-    .AddJsonFile($"appsettings.json", optional: false, reloadOnChange: true)
-    .AddEnvironmentVariables()
-    .AddCommandLine(args)
-    .Build();
+        .SetBasePath(baseDirectory)
+        .AddJsonFile($"appsettings.json", optional: false, reloadOnChange: true)
+        .AddEnvironmentVariables()
+        .AddCommandLine(args)
+        .Build();
 
     var app = builder
         .ConfigureServices(configuration)

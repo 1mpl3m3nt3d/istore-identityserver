@@ -366,7 +366,7 @@ internal static class HostingExtensions
                 options.TokenValidationParameters = new TokenValidationParameters
                 {
                     NameClaimType = "name",
-                    RoleClaimType = "role"
+                    RoleClaimType = "role",
                 };
             });
         */
@@ -382,55 +382,55 @@ internal static class HostingExtensions
 
         app.UseHttpLogging();
 
-        app.Use(async (context, next) =>
-        {
-            var remoteAddress = context.Connection.RemoteIpAddress;
-            var remotePort = context.Connection.RemotePort;
+        app.Use(async (ctx, next) =>
+            {
+                var remoteAddress = ctx.Connection.RemoteIpAddress;
+                var remotePort = ctx.Connection.RemotePort;
 
-            app.Logger.LogInformation($"Request Remote: {remoteAddress}:{remotePort}");
+                app.Logger.LogInformation($"Request Remote: {remoteAddress}:{remotePort}");
 
-            await next(context);
-        });
+                await next(ctx);
+            });
 
         app.Use(async (ctx, next) =>
-        {
-            var identityUri = new Uri(app.Configuration["IdentityUrl"]);
-
-            var identityUrl =
-                $"{identityUri.Scheme}://{identityUri.Host}{(identityUri.IsDefaultPort ? string.Empty : $":{identityUri.Port}")}";
-
-            var identityHost =
-                $"{identityUri.Host}{(identityUri.IsDefaultPort ? string.Empty : $":{identityUri.Port}")}";
-
-            if (identityUri is not null && identityUrl is not null)
             {
-                ctx.Request.Scheme = identityUri.Scheme;
-                ctx.Request.Host = new HostString(identityHost);
+                var identityUri = new Uri(app.Configuration["IdentityUrl"]);
 
-                var contextUrls = ctx.RequestServices.GetService<IServerUrls>();
+                var identityUrl =
+                    $"{identityUri.Scheme}://{identityUri.Host}{(identityUri.IsDefaultPort ? string.Empty : $":{identityUri.Port}")}";
 
-                if (contextUrls is not null)
+                var identityHost =
+                    $"{identityUri.Host}{(identityUri.IsDefaultPort ? string.Empty : $":{identityUri.Port}")}";
+
+                if (identityUri is not null && identityUrl is not null)
                 {
-                    contextUrls.Origin = identityUrl;
+                    ctx.Request.Scheme = identityUri.Scheme;
+                    ctx.Request.Host = new HostString(identityHost);
+
+                    var contextUrls = ctx.RequestServices.GetService<IServerUrls>();
+
+                    if (contextUrls is not null)
+                    {
+                        contextUrls.Origin = identityUrl;
+                    }
+
+                    var requestUrls = ctx.Request.HttpContext.RequestServices.GetService<IServerUrls>();
+
+                    if (requestUrls is not null)
+                    {
+                        requestUrls.Origin = identityUrl;
+                    }
+
+                    var responseUrls = ctx.Response.HttpContext.RequestServices.GetService<IServerUrls>();
+
+                    if (responseUrls is not null)
+                    {
+                        responseUrls.Origin = identityUrl;
+                    }
                 }
 
-                var requestUrls = ctx.Request.HttpContext.RequestServices.GetService<IServerUrls>();
-
-                if (requestUrls is not null)
-                {
-                    requestUrls.Origin = identityUrl;
-                }
-
-                var responseUrls = ctx.Response.HttpContext.RequestServices.GetService<IServerUrls>();
-
-                if (responseUrls is not null)
-                {
-                    responseUrls.Origin = identityUrl;
-                }
-            }
-
-            await next(ctx);
-        });
+                await next(ctx);
+            });
 
         var forwardedHeadersOptions = new ForwardedHeadersOptions()
         {
@@ -491,13 +491,15 @@ internal static class HostingExtensions
 
         app.MapRazorPages().RequireAuthorization();
 
-        //app.MapDefaultControllerRoute();
+        app.MapDefaultControllerRoute();
 
+        /*
         app.UseEndpoints(endpoints =>
             {
-                //endpoints.MapRazorPages().RequireAuthorization();
+                endpoints.MapRazorPages().RequireAuthorization();
                 endpoints.MapDefaultControllerRoute();
             });
+        */
 
         return app;
     }
