@@ -23,9 +23,9 @@ namespace IdentityServer
                 .MinimumLevel.Override("Microsoft.Hosting.Lifetime", LogEventLevel.Information)
                 .MinimumLevel.Override("System", LogEventLevel.Warning)
                 .MinimumLevel.Override("Microsoft.AspNetCore.Authentication", LogEventLevel.Information)
-                .Enrich.FromLogContext()
                 .WriteTo.Console(outputTemplate: "[{Timestamp:HH:mm:ss} {Level}] {SourceContext}{NewLine}{Message:lj}{NewLine}{Exception}{NewLine}", theme: AnsiConsoleTheme.Code)
-                .CreateBootstrapLogger(); // .CreateLogger() was used by default in IS4
+                .Enrich.FromLogContext()
+                .CreateBootstrapLogger(); // .CreateLogger() was used by default in IS4 template
 
             try
             {
@@ -61,8 +61,10 @@ namespace IdentityServer
                 .Build();
 
             return Host.CreateDefaultBuilder(args)
-                .UseSerilog((ctx, lc) =>
-                    lc.ReadFrom.Configuration(ctx.Configuration))
+                .UseSerilog((ctx, lc) => lc
+                    .WriteTo.Console(outputTemplate: "[{Timestamp:HH:mm:ss} {Level}] {SourceContext}{NewLine}{Message:lj}{NewLine}{Exception}{NewLine}", theme: AnsiConsoleTheme.Code)
+                    .Enrich.FromLogContext()
+                    .ReadFrom.Configuration(ctx.Configuration))
                 .ConfigureWebHostDefaults(webBuilder =>
                     {
                         webBuilder.UseContentRoot(baseDirectory);
