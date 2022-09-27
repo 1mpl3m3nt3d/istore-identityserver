@@ -1,6 +1,9 @@
 // Copyright (c) Brock Allen & Dominick Baier. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
 
+using System;
+using System.Net;
+
 using IdentityServer4.Extensions;
 
 using IdentityServerHost.Quickstart.UI;
@@ -11,6 +14,8 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+
+using Serilog;
 
 namespace IdentityServer
 {
@@ -28,11 +33,10 @@ namespace IdentityServer
 
         public void Configure(IApplicationBuilder app)
         {
-            //app.UseSerilogRequestLogging();
+            app.UseSerilogRequestLogging();
 
             app.Use(async (ctx, next) =>
                 {
-                    /*
                     var identityUri = new Uri(Configuration["IdentityUrl"]);
 
                     var identityUrl =
@@ -46,9 +50,8 @@ namespace IdentityServer
                         ctx.Request.Scheme = identityUri.Scheme;
                         ctx.Request.Host = new HostString(identityHost);
                     }
-                    */
 
-                    ctx.SetIdentityServerOrigin(Configuration["IdentityUrl"]); // (identityUrl);
+                    ctx.SetIdentityServerOrigin(identityUrl);
 
                     await next();
                 });
@@ -57,18 +60,18 @@ namespace IdentityServer
             {
                 ForwardedHeaders =
                     ForwardedHeaders.XForwardedFor |
-                    //ForwardedHeaders.XForwardedHost |
+                    ForwardedHeaders.XForwardedHost |
                     ForwardedHeaders.XForwardedProto,
-                //ForwardLimit = 2,
+                ForwardLimit = 2,
                 RequireHeaderSymmetry = false,
             };
 
-            //forwardedHeadersOptions.KnownNetworks.Clear();
-            //forwardedHeadersOptions.KnownProxies.Clear();
+            forwardedHeadersOptions.KnownNetworks.Clear();
+            forwardedHeadersOptions.KnownProxies.Clear();
 
             app.UseForwardedHeaders(forwardedHeadersOptions);
 
-            //app.UseCertificateForwarding();
+            app.UseCertificateForwarding();
 
             if (System.Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Production")
             {
@@ -118,13 +121,10 @@ namespace IdentityServer
 
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddControllersWithViews();
-
             var configuration = Configuration;
 
             services.Configure<AppSettings>(configuration);
 
-            /*
             services.Configure<ForwardedHeadersOptions>(options =>
                 {
                     options.ForwardedHeaders =
@@ -137,24 +137,9 @@ namespace IdentityServer
                     options.KnownNetworks.Clear();
                     options.KnownProxies.Clear();
                 });
-            */
 
-            services.AddCors(options =>
-                options.AddPolicy(
-                    "CorsPolicy",
-                    corsBuilder => corsBuilder
-                        .SetIsOriginAllowed((host) => true)
-                        .WithOrigins(
-                            configuration["BasketApi"],
-                            configuration["CatalogApi"],
-                            configuration["GlobalUrl"],
-                            configuration["IdentityUrl"],
-                            configuration["SpaUrl"])
-                        .AllowAnyHeader()
-                        .AllowAnyMethod()
-                        .AllowCredentials()));
+            services.AddControllersWithViews();
 
-            /*
             services.AddCertificateForwarding(options => { });
 
             services.AddHsts(options =>
@@ -176,6 +161,7 @@ namespace IdentityServer
                     }
                 });
 
+            /*
             services.ConfigureApplicationCookie(options =>
                 {
                     options.Cookie.HttpOnly = false;
@@ -196,6 +182,21 @@ namespace IdentityServer
                     options.SlidingExpiration = true;
                 });
             */
+
+            services.AddCors(options =>
+                options.AddPolicy(
+                    "CorsPolicy",
+                    corsBuilder => corsBuilder
+                        .SetIsOriginAllowed((host) => true)
+                        .WithOrigins(
+                            configuration["BasketApi"],
+                            configuration["CatalogApi"],
+                            configuration["GlobalUrl"],
+                            configuration["IdentityUrl"],
+                            configuration["SpaUrl"])
+                        .AllowAnyHeader()
+                        .AllowAnyMethod()
+                        .AllowCredentials()));
 
             var isBuilder = services.AddIdentityServer(options =>
                 {
