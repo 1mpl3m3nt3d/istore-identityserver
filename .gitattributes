@@ -92,9 +92,9 @@
 *.slnf text eol=crlf encoding=UTF-8
 
 ###############################################################################
-# Force windows batch script files to always use CRLF line endings so that if
-# a repo is accessed in Windows via a file share from Linux, the scripts will
-# work.
+# Force windows script and config files to always use CRLF line endings so that
+# if a repo is accessed in Windows via a file share from Linux, the scripts
+# will work.
 ###############################################################################
 
 *.[bB][aA][tT] text eol=crlf
@@ -104,8 +104,9 @@
 *.[wW][sS][lL][cC][oO][nN][fF][iI][gG] text eol=crlf
 
 ###############################################################################
-# Force linux bash scripts to always use LF line endings so that if a repo is
-# accessed in Unix via a file share from Windows, the scripts will work.
+# Force linux script and config files to always use LF line endings so that if
+# a repo is accessed in Unix via a file share from Windows, the scripts will
+# work.
 ###############################################################################
 
 *.[bB][aA][sS][hH] text eol=lf
@@ -177,7 +178,7 @@
 # Image files are treated as binary by default.
 ###############################################################################
 
-### 2D image formats
+##### 2D Images
 #*.[aA][iI] binary
 #*.[bB][mM][pP] binary
 #*.[dD][dD][sS] binary
@@ -196,7 +197,7 @@
 #*.[tT][iI][fF][fF] binary
 #*.[wW][eE][bB][pP] binary
 
-### 3D image formats
+##### 3D Images
 #*.3[dD][mM] binary
 #*.3[dD][sS] binary
 #*.[aA][bB][cC] binary
@@ -319,9 +320,9 @@
 ###############################################################################
 # Diff behavior for common document formats.
 #
-# Convert binary document formats to text before diffing them. This feature
-# is only available from the command line. Turn it on by uncommenting the
-# entries below.
+# Convert binary document formats to text before diffing them. This feature is
+# only available from the command line. Turn it on by uncommenting the entries
+# below.
 ###############################################################################
 
 #*.[dD][oO][cC] diff=astextplain
@@ -332,6 +333,49 @@
 ###############################################################################
 # Git Large File System (LFS)
 ###############################################################################
+
+##### 2D Images
+#*.[aA][iI] filter=lfs diff=lfs merge=lfs -text
+#*.[bB][mM][pP] filter=lfs diff=lfs merge=lfs -text
+#*.[dD][dD][sS] filter=lfs diff=lfs merge=lfs -text
+#*.[eE][xX][rR] filter=lfs diff=lfs merge=lfs -text
+#*.[gG][iI][fF] filter=lfs diff=lfs merge=lfs -text
+#*.[hH][dD][rR] filter=lfs diff=lfs merge=lfs -text
+#*.[iI][cC][oO] filter=lfs diff=lfs merge=lfs -text
+#*.[iI][fF][fF] filter=lfs diff=lfs merge=lfs -text
+#*.[jJ][pP][eE][gG] filter=lfs diff=lfs merge=lfs -text
+#*.[jJ][pP][gG] filter=lfs diff=lfs merge=lfs -text
+#*.[pP][iI][cC][tT] filter=lfs diff=lfs merge=lfs -text
+#*.[pP][nN][gG] filter=lfs diff=lfs merge=lfs -text
+#*.[pP][sS][dD] filter=lfs diff=lfs merge=lfs -text
+#*.[tT][gG][aA] filter=lfs diff=lfs merge=lfs -text
+#*.[tT][iI][fF] filter=lfs diff=lfs merge=lfs -text
+#*.[tT][iI][fF][fF] filter=lfs diff=lfs merge=lfs -text
+#*.[wW][eE][bB][pP] filter=lfs diff=lfs merge=lfs -text
+
+##### 3D Images
+#*.3[dD][mM] filter=lfs diff=lfs merge=lfs -text
+#*.3[dD][sS] filter=lfs diff=lfs merge=lfs -text
+#*.[aA][bB][cC] filter=lfs diff=lfs merge=lfs -text
+#*.[bB][lL][eE][nN][dD] filter=lfs diff=lfs merge=lfs -text
+#*.[cC]4[dD] filter=lfs diff=lfs merge=lfs -text
+#*.[cC][oO][lL][lL][aA][dD][aA] filter=lfs diff=lfs merge=lfs -text
+#*.[dD][aA][eE] filter=lfs diff=lfs merge=lfs -text
+#*.[dD][xX][fF] filter=lfs diff=lfs merge=lfs -text
+#*.[fF][bB][xX] filter=lfs diff=lfs merge=lfs -text
+#*.[jJ][aA][sS] filter=lfs diff=lfs merge=lfs -text
+#*.[lL][wW][oO] filter=lfs diff=lfs merge=lfs -text
+#*.[lL][wW][oO]2 filter=lfs diff=lfs merge=lfs -text
+#*.[lL][wW][sS] filter=lfs diff=lfs merge=lfs -text
+#*.[lL][xX][oO] filter=lfs diff=lfs merge=lfs -text
+#*.[mM][aA] filter=lfs diff=lfs merge=lfs -text
+#*.[mM][aA][xX] filter=lfs diff=lfs merge=lfs -text
+#*.[mM][bB] filter=lfs diff=lfs merge=lfs -text
+#*.[oO][bB][jJ] filter=lfs diff=lfs merge=lfs -text
+#*.[pP][lL][yY] filter=lfs diff=lfs merge=lfs -text
+#*.[sS][kK][pP] filter=lfs diff=lfs merge=lfs -text
+#*.[sS][tT][lL] filter=lfs diff=lfs merge=lfs -text
+#*.[zZ][tT][lL] filter=lfs diff=lfs merge=lfs -text
 
 ##### Archives
 #*.7[zZ] filter=lfs diff=lfs merge=lfs -text
@@ -374,51 +418,6 @@
 #*.[tT][tT][fF] filter=lfs diff=lfs merge=lfs -text
 #*.[wW][oO][fF][fF] filter=lfs diff=lfs merge=lfs -text
 #*.[wW][oO][fF][fF]2 filter=lfs diff=lfs merge=lfs -text
-
-##### Images
-#
-### 2D image formats
-#*.[aA][iI] filter=lfs diff=lfs merge=lfs -text
-#*.[bB][mM][pP] filter=lfs diff=lfs merge=lfs -text
-#*.[dD][dD][sS] filter=lfs diff=lfs merge=lfs -text
-#*.[eE][xX][rR] filter=lfs diff=lfs merge=lfs -text
-#*.[gG][iI][fF] filter=lfs diff=lfs merge=lfs -text
-#*.[hH][dD][rR] filter=lfs diff=lfs merge=lfs -text
-#*.[iI][cC][oO] filter=lfs diff=lfs merge=lfs -text
-#*.[iI][fF][fF] filter=lfs diff=lfs merge=lfs -text
-#*.[jJ][pP][eE][gG] filter=lfs diff=lfs merge=lfs -text
-#*.[jJ][pP][gG] filter=lfs diff=lfs merge=lfs -text
-#*.[pP][iI][cC][tT] filter=lfs diff=lfs merge=lfs -text
-#*.[pP][nN][gG] filter=lfs diff=lfs merge=lfs -text
-#*.[pP][sS][dD] filter=lfs diff=lfs merge=lfs -text
-#*.[tT][gG][aA] filter=lfs diff=lfs merge=lfs -text
-#*.[tT][iI][fF] filter=lfs diff=lfs merge=lfs -text
-#*.[tT][iI][fF][fF] filter=lfs diff=lfs merge=lfs -text
-#*.[wW][eE][bB][pP] filter=lfs diff=lfs merge=lfs -text
-#
-### 3D image formats
-#*.3[dD][mM] filter=lfs diff=lfs merge=lfs -text
-#*.3[dD][sS] filter=lfs diff=lfs merge=lfs -text
-#*.[aA][bB][cC] filter=lfs diff=lfs merge=lfs -text
-#*.[bB][lL][eE][nN][dD] filter=lfs diff=lfs merge=lfs -text
-#*.[cC]4[dD] filter=lfs diff=lfs merge=lfs -text
-#*.[cC][oO][lL][lL][aA][dD][aA] filter=lfs diff=lfs merge=lfs -text
-#*.[dD][aA][eE] filter=lfs diff=lfs merge=lfs -text
-#*.[dD][xX][fF] filter=lfs diff=lfs merge=lfs -text
-#*.[fF][bB][xX] filter=lfs diff=lfs merge=lfs -text
-#*.[jJ][aA][sS] filter=lfs diff=lfs merge=lfs -text
-#*.[lL][wW][oO] filter=lfs diff=lfs merge=lfs -text
-#*.[lL][wW][oO]2 filter=lfs diff=lfs merge=lfs -text
-#*.[lL][wW][sS] filter=lfs diff=lfs merge=lfs -text
-#*.[lL][xX][oO] filter=lfs diff=lfs merge=lfs -text
-#*.[mM][aA] filter=lfs diff=lfs merge=lfs -text
-#*.[mM][aA][xX] filter=lfs diff=lfs merge=lfs -text
-#*.[mM][bB] filter=lfs diff=lfs merge=lfs -text
-#*.[oO][bB][jJ] filter=lfs diff=lfs merge=lfs -text
-#*.[pP][lL][yY] filter=lfs diff=lfs merge=lfs -text
-#*.[sS][kK][pP] filter=lfs diff=lfs merge=lfs -text
-#*.[sS][tT][lL] filter=lfs diff=lfs merge=lfs -text
-#*.[zZ][tT][lL] filter=lfs diff=lfs merge=lfs -text
 
 ##### Other
 #*.[aA][pP][pP][xX] filter=lfs diff=lfs merge=lfs -text
