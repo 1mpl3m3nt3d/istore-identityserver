@@ -1,6 +1,7 @@
 using System.Net;
 
 using Duende.IdentityServer;
+using Duende.IdentityServer.Extensions;
 using Duende.IdentityServer.Models;
 using Duende.IdentityServer.Services;
 
@@ -381,22 +382,12 @@ internal static class HostingExtensions
 
     public static WebApplication ConfigurePipeline(this WebApplication app)
     {
-        app.UseSerilogRequestLogging();
+        var basePath = app.Configuration["BasePath"];
 
-        if (app.Configuration["HttpLogging"] == "true")
+        if (!basePath.IsNullOrEmpty())
         {
-            app.UseHttpLogging();
+            app.UsePathBase(basePath);
         }
-
-        app.Use(async (ctx, next) =>
-            {
-                var remoteAddress = ctx.Connection.RemoteIpAddress;
-                var remotePort = ctx.Connection.RemotePort;
-
-                app.Logger.LogInformation($"Request Remote: {remoteAddress}:{remotePort}");
-
-                await next(ctx);
-            });
 
         app.Use(async (ctx, next) =>
             {
@@ -412,14 +403,22 @@ internal static class HostingExtensions
                 {
                     ctx.Request.Scheme = identityUri.Scheme;
                     ctx.Request.Host = new HostString(identityHost);
-                    ctx.Request.PathBase = identityUri.AbsolutePath;
+
+                    if (!basePath.IsNullOrEmpty())
+                    {
+                        ctx.Request.PathBase = basePath;
+                    }
 
                     var contextUrls = ctx.RequestServices.GetService<IServerUrls>();
 
                     if (contextUrls is not null)
                     {
                         contextUrls.Origin = identityUrl;
-                        contextUrls.BasePath = identityUri.AbsolutePath;
+
+                        if (!basePath.IsNullOrEmpty())
+                        {
+                            contextUrls.BasePath = basePath;
+                        }
                     }
 
                     var requestUrls = ctx.Request.HttpContext.RequestServices.GetService<IServerUrls>();
@@ -427,7 +426,11 @@ internal static class HostingExtensions
                     if (requestUrls is not null)
                     {
                         requestUrls.Origin = identityUrl;
-                        requestUrls.BasePath = identityUri.AbsolutePath;
+
+                        if (!basePath.IsNullOrEmpty())
+                        {
+                            requestUrls.BasePath = basePath;
+                        }
                     }
 
                     var responseUrls = ctx.Response.HttpContext.RequestServices.GetService<IServerUrls>();
@@ -435,12 +438,33 @@ internal static class HostingExtensions
                     if (responseUrls is not null)
                     {
                         responseUrls.Origin = identityUrl;
-                        responseUrls.BasePath = identityUri.AbsolutePath;
+
+                        if (!basePath.IsNullOrEmpty())
+                        {
+                            responseUrls.BasePath = basePath;
+                        }
                     }
                 }
 
                 await next(ctx);
             });
+
+        app.UseSerilogRequestLogging();
+
+        if (app.Configuration["HttpLogging"] == "true")
+        {
+            app.UseHttpLogging();
+        }
+
+        app.Use(async (ctx, next) =>
+        {
+            var remoteAddress = ctx.Connection.RemoteIpAddress;
+            var remotePort = ctx.Connection.RemotePort;
+
+            app.Logger.LogInformation($"Request Remote: {remoteAddress}:{remotePort}");
+
+            await next(ctx);
+        });
 
         var forwardedHeadersOptions = new ForwardedHeadersOptions()
         {
@@ -499,17 +523,15 @@ internal static class HostingExtensions
         //app.UseResponseCompression();
         //app.UseResponseCaching();
 
-        app.MapRazorPages().RequireAuthorization();
+        //app.MapRazorPages().RequireAuthorization();
 
-        app.MapDefaultControllerRoute();
+        //app.MapDefaultControllerRoute();
 
-        /*
         app.UseEndpoints(endpoints =>
             {
                 endpoints.MapRazorPages().RequireAuthorization();
                 endpoints.MapDefaultControllerRoute();
             });
-        */
 
         return app;
     }

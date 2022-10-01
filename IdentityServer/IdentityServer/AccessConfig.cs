@@ -49,17 +49,6 @@ public static class AccessConfig
                     $"{configuration["GlobalUrl"]}/signout-oidc",
                     $"{configuration["GlobalUrl"]}/silentrenew",
 
-                    $"{configuration["IdentityUrl"]}",
-                    $"{configuration["IdentityUrl"]}/login/callback",
-                    $"{configuration["IdentityUrl"]}/logout/callback",
-                    $"{configuration["IdentityUrl"]}/signin/callback",
-                    $"{configuration["IdentityUrl"]}/signin-callback-oidc",
-                    $"{configuration["IdentityUrl"]}/signin-oidc",
-                    $"{configuration["IdentityUrl"]}/signout/callback",
-                    $"{configuration["IdentityUrl"]}/signout-callback-oidc",
-                    $"{configuration["IdentityUrl"]}/signout-oidc",
-                    $"{configuration["IdentityUrl"]}/silentrenew",
-
                     $"{configuration["SpaUrl"]}",
                     $"{configuration["SpaUrl"]}/login/callback",
                     $"{configuration["SpaUrl"]}/logout/callback",
@@ -79,12 +68,6 @@ public static class AccessConfig
                     $"{configuration["GlobalUrl"]}/signout/callback",
                     $"{configuration["GlobalUrl"]}/signout-callback-oidc",
                     $"{configuration["GlobalUrl"]}/signout-oidc",
-
-                    $"{configuration["IdentityUrl"]}",
-                    $"{configuration["IdentityUrl"]}/logout/callback",
-                    $"{configuration["IdentityUrl"]}/signout/callback",
-                    $"{configuration["IdentityUrl"]}/signout-callback-oidc",
-                    $"{configuration["IdentityUrl"]}/signout-oidc",
 
                     $"{configuration["SpaUrl"]}",
                     $"{configuration["SpaUrl"]}/logout/callback",
@@ -120,6 +103,7 @@ public static class AccessConfig
                 SlidingRefreshTokenLifetime = 1296000,
                 UpdateAccessTokenClaimsOnRefresh = true,
             },
+
             new Client
             {
                 ClientId = "basketswaggerui",
@@ -134,18 +118,17 @@ public static class AccessConfig
                 {
                     $"{configuration["BasketApi"]}/swagger/oauth2-redirect.html",
                     $"{configuration["GlobalUrl"]}/swagger/oauth2-redirect.html",
-                    $"{configuration["IdentityUrl"]}/swagger/oauth2-redirect.html",
                 },
 
                 PostLogoutRedirectUris =
                 {
                     $"{configuration["BasketApi"]}/swagger/",
                     $"{configuration["GlobalUrl"]}/swagger/",
-                    $"{configuration["IdentityUrl"]}/swagger/",
                 },
 
                 AllowAccessTokensViaBrowser = true,
             },
+
             new Client
             {
                 ClientId = "catalogswaggerui",
@@ -160,14 +143,12 @@ public static class AccessConfig
                 {
                     $"{configuration["CatalogApi"]}/swagger/oauth2-redirect.html",
                     $"{configuration["GlobalUrl"]}/swagger/oauth2-redirect.html",
-                    $"{configuration["IdentityUrl"]}/swagger/oauth2-redirect.html",
                 },
 
                 PostLogoutRedirectUris =
                 {
                     $"{configuration["CatalogApi"]}/swagger/",
                     $"{configuration["GlobalUrl"]}/swagger/",
-                    $"{configuration["IdentityUrl"]}/swagger/",
                 },
 
                 AllowAccessTokensViaBrowser = true,

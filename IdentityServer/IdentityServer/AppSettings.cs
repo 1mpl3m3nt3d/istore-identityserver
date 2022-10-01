@@ -2,6 +2,8 @@ namespace IdentityServer;
 
 public class AppSettings
 {
+    public string? BasePath { get; set; }
+
     public string? BasketApi { get; set; }
 
     public string? CatalogApi { get; set; }
