@@ -49,6 +49,17 @@ public static class AccessConfig
                     $"{configuration["GlobalUrl"]}/signout-oidc",
                     $"{configuration["GlobalUrl"]}/silentrenew",
 
+                    $"{configuration["IdentityUrl"]}",
+                    $"{configuration["IdentityUrl"]}/login/callback",
+                    $"{configuration["IdentityUrl"]}/logout/callback",
+                    $"{configuration["IdentityUrl"]}/signin/callback",
+                    $"{configuration["IdentityUrl"]}/signin-callback-oidc",
+                    $"{configuration["IdentityUrl"]}/signin-oidc",
+                    $"{configuration["IdentityUrl"]}/signout/callback",
+                    $"{configuration["IdentityUrl"]}/signout-callback-oidc",
+                    $"{configuration["IdentityUrl"]}/signout-oidc",
+                    $"{configuration["IdentityUrl"]}/silentrenew",
+
                     $"{configuration["SpaUrl"]}",
                     $"{configuration["SpaUrl"]}/login/callback",
                     $"{configuration["SpaUrl"]}/logout/callback",
@@ -68,6 +79,12 @@ public static class AccessConfig
                     $"{configuration["GlobalUrl"]}/signout/callback",
                     $"{configuration["GlobalUrl"]}/signout-callback-oidc",
                     $"{configuration["GlobalUrl"]}/signout-oidc",
+
+                    $"{configuration["IdentityUrl"]}",
+                    $"{configuration["IdentityUrl"]}/logout/callback",
+                    $"{configuration["IdentityUrl"]}/signout/callback",
+                    $"{configuration["IdentityUrl"]}/signout-callback-oidc",
+                    $"{configuration["IdentityUrl"]}/signout-oidc",
 
                     $"{configuration["SpaUrl"]}",
                     $"{configuration["SpaUrl"]}/logout/callback",
@@ -113,8 +130,19 @@ public static class AccessConfig
                 AllowedGrantTypes = GrantTypes.Implicit,
                 AllowedScopes = { "basket", "basket.bff", "openid", "profile", "spa" },
 
-                RedirectUris = { $"{configuration["BasketApi"]}/swagger/oauth2-redirect.html" },
-                PostLogoutRedirectUris = { $"{configuration["BasketApi"]}/swagger/" },
+                RedirectUris =
+                {
+                    $"{configuration["BasketApi"]}/swagger/oauth2-redirect.html",
+                    $"{configuration["GlobalUrl"]}/swagger/oauth2-redirect.html",
+                    $"{configuration["IdentityUrl"]}/swagger/oauth2-redirect.html",
+                },
+
+                PostLogoutRedirectUris =
+                {
+                    $"{configuration["BasketApi"]}/swagger/",
+                    $"{configuration["GlobalUrl"]}/swagger/",
+                    $"{configuration["IdentityUrl"]}/swagger/",
+                },
 
                 AllowAccessTokensViaBrowser = true,
             },
@@ -128,8 +156,19 @@ public static class AccessConfig
                 AllowedGrantTypes = GrantTypes.Implicit,
                 AllowedScopes = { "catalog", "catalog.bff", "openid", "profile", "spa" },
 
-                RedirectUris = { $"{configuration["CatalogApi"]}/swagger/oauth2-redirect.html" },
-                PostLogoutRedirectUris = { $"{configuration["CatalogApi"]}/swagger/" },
+                RedirectUris =
+                {
+                    $"{configuration["CatalogApi"]}/swagger/oauth2-redirect.html",
+                    $"{configuration["GlobalUrl"]}/swagger/oauth2-redirect.html",
+                    $"{configuration["IdentityUrl"]}/swagger/oauth2-redirect.html",
+                },
+
+                PostLogoutRedirectUris =
+                {
+                    $"{configuration["CatalogApi"]}/swagger/",
+                    $"{configuration["GlobalUrl"]}/swagger/",
+                    $"{configuration["IdentityUrl"]}/swagger/",
+                },
 
                 AllowAccessTokensViaBrowser = true,
             },

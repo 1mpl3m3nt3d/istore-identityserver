@@ -412,12 +412,14 @@ internal static class HostingExtensions
                 {
                     ctx.Request.Scheme = identityUri.Scheme;
                     ctx.Request.Host = new HostString(identityHost);
+                    ctx.Request.PathBase = identityUri.AbsolutePath;
 
                     var contextUrls = ctx.RequestServices.GetService<IServerUrls>();
 
                     if (contextUrls is not null)
                     {
                         contextUrls.Origin = identityUrl;
+                        contextUrls.BasePath = identityUri.AbsolutePath;
                     }
 
                     var requestUrls = ctx.Request.HttpContext.RequestServices.GetService<IServerUrls>();
@@ -425,6 +427,7 @@ internal static class HostingExtensions
                     if (requestUrls is not null)
                     {
                         requestUrls.Origin = identityUrl;
+                        requestUrls.BasePath = identityUri.AbsolutePath;
                     }
 
                     var responseUrls = ctx.Response.HttpContext.RequestServices.GetService<IServerUrls>();
@@ -432,6 +435,7 @@ internal static class HostingExtensions
                     if (responseUrls is not null)
                     {
                         responseUrls.Origin = identityUrl;
+                        responseUrls.BasePath = identityUri.AbsolutePath;
                     }
                 }
 
