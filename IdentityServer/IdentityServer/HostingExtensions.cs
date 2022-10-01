@@ -454,17 +454,17 @@ internal static class HostingExtensions
         if (app.Configuration["HttpLogging"] == "true")
         {
             app.UseHttpLogging();
+
+            app.Use(async (ctx, next) =>
+            {
+                var remoteAddress = ctx.Connection.RemoteIpAddress;
+                var remotePort = ctx.Connection.RemotePort;
+
+                app.Logger.LogInformation($"Request Remote: {remoteAddress}:{remotePort}");
+
+                await next(ctx);
+            });
         }
-
-        app.Use(async (ctx, next) =>
-        {
-            var remoteAddress = ctx.Connection.RemoteIpAddress;
-            var remotePort = ctx.Connection.RemotePort;
-
-            app.Logger.LogInformation($"Request Remote: {remoteAddress}:{remotePort}");
-
-            await next(ctx);
-        });
 
         var forwardedHeadersOptions = new ForwardedHeadersOptions()
         {

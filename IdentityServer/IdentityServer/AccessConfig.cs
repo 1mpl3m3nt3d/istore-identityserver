@@ -116,13 +116,17 @@ public static class AccessConfig
 
                 RedirectUris =
                 {
+                    $"{configuration["BasketApi"]}/basket/swagger/oauth2-redirect.html",
                     $"{configuration["BasketApi"]}/swagger/oauth2-redirect.html",
+                    $"{configuration["GlobalUrl"]}/basket/swagger/oauth2-redirect.html",
                     $"{configuration["GlobalUrl"]}/swagger/oauth2-redirect.html",
                 },
 
                 PostLogoutRedirectUris =
                 {
+                    $"{configuration["BasketApi"]}/basket/swagger/",
                     $"{configuration["BasketApi"]}/swagger/",
+                    $"{configuration["GlobalUrl"]}/basket/swagger/",
                     $"{configuration["GlobalUrl"]}/swagger/",
                 },
 
@@ -141,13 +145,17 @@ public static class AccessConfig
 
                 RedirectUris =
                 {
+                    $"{configuration["CatalogApi"]}/catalog/swagger/oauth2-redirect.html",
                     $"{configuration["CatalogApi"]}/swagger/oauth2-redirect.html",
+                    $"{configuration["GlobalUrl"]}/catalog/swagger/oauth2-redirect.html",
                     $"{configuration["GlobalUrl"]}/swagger/oauth2-redirect.html",
                 },
 
                 PostLogoutRedirectUris =
                 {
+                    $"{configuration["CatalogApi"]}/catalog/swagger/",
                     $"{configuration["CatalogApi"]}/swagger/",
+                    $"{configuration["GlobalUrl"]}/catalog/swagger/",
                     $"{configuration["GlobalUrl"]}/swagger/",
                 },
 
