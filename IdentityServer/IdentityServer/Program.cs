@@ -1,4 +1,4 @@
-using IdentityServer;
+using IdentityServer.Extensions;
 
 using Serilog;
 
@@ -24,15 +24,8 @@ try
         .Enrich.FromLogContext()
         .ReadFrom.Configuration(ctx.Configuration));
 
-    var configuration = new ConfigurationBuilder()
-        .SetBasePath(baseDirectory)
-        .AddJsonFile($"appsettings.json", optional: false, reloadOnChange: true)
-        .AddEnvironmentVariables()
-        .AddCommandLine(args)
-        .Build();
-
     var app = builder
-        .ConfigureServices(configuration)
+        .ConfigureServices()
         .ConfigurePipeline();
 
     app.Run();
